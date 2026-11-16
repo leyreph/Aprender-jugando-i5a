@@ -179,6 +179,12 @@ h1,h2,h3{font-family:var(--display);margin:0;text-transform:uppercase}
 .trace{position:relative;width:100%;max-width:24rem;aspect-ratio:1;margin:0 auto;background:#fff;border:.2rem solid var(--ink);border-radius:1.4rem;box-shadow:0 .3rem 0 var(--ink);overflow:hidden;touch-action:none}
 .trace canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 .tracebtns{display:flex;justify-content:center;gap:1rem;margin-top:1rem}
+.wordrow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.5rem;margin:0 0 .6rem}
+.wem{font-size:3rem;line-height:1}
+.wordline{display:flex;gap:.2rem}
+.wordline span{display:grid;place-items:center;width:2.3rem;height:2.8rem;font:700 1.9rem var(--display);border-bottom:.25rem solid #d9cfee;color:#c4bddc}
+.wordline span.cur{color:var(--ink);border-color:var(--orange);background:#fff1c2;border-radius:.5rem .5rem 0 0}
+.wordline span.done{color:var(--blue);border-color:var(--leaf)}
 .colors{display:flex;justify-content:center;gap:.5rem;margin-top:.7rem}
 .colors button{width:2.4rem;height:2.4rem;border-radius:50%;border:.15rem solid var(--ink);background:var(--col)}
 .colors button[aria-pressed=true]{outline:.25rem solid var(--ink);outline-offset:.1rem}
@@ -394,6 +400,53 @@ function tableSvg(top,bottom){return `<svg viewBox="0 0 300 300">
 <g data-v="abajo"><rect x="95" y="175" width="110" height="110" fill="transparent"/><text x="150" y="276" font-size="84" text-anchor="middle">${bottom}</text></g>
 </svg>`}
 
+
+/* ================= stroke guides (school print letters, 100x100 box, cap height y18..92) ================= */
+const ACUTE='M60 2 L47 13';
+const STROKES={
+ A:['M50 18 L20 92','M50 18 L80 92','M31 64 L69 64'],
+ B:['M25 18 L25 92','M25 18 L55 18 C80 18 80 55 55 55 L25 55','M55 55 C85 55 85 92 55 92 L25 92'],
+ C:['M75 28 C62 12 26 14 22 55 C26 96 62 98 75 82'],
+ D:['M25 18 L25 92','M25 18 L45 18 C85 18 85 92 45 92 L25 92'],
+ E:['M25 18 L25 92','M25 18 L72 18','M25 55 L65 55','M25 92 L72 92'],
+ F:['M25 18 L25 92','M25 18 L72 18','M25 55 L65 55'],
+ G:['M75 28 C62 12 26 14 22 55 C26 96 70 98 76 70 L76 58 L55 58'],
+ H:['M25 18 L25 92','M75 18 L75 92','M25 55 L75 55'],
+ I:['M50 18 L50 92'],
+ J:['M65 18 L65 72 C65 98 25 98 25 75'],
+ K:['M25 18 L25 92','M72 18 L25 62','M40 48 L74 92'],
+ L:['M28 18 L28 92 L74 92'],
+ M:['M20 18 L20 92','M20 18 L50 62 L80 18 L80 92'],
+ N:['M25 18 L25 92','M25 18 L75 92 L75 18'],
+ 'Ñ':['M25 18 L25 92','M25 18 L75 92 L75 18','M30 9 C38 1 44 13 52 8 C60 3 64 5 70 2'],
+ O:['M50 18 C18 18 18 92 50 92 C82 92 82 18 50 18'],
+ P:['M25 18 L25 92','M25 18 L55 18 C82 18 82 58 55 58 L25 58'],
+ Q:['M50 18 C18 18 18 92 50 92 C82 92 82 18 50 18','M56 72 L80 96'],
+ R:['M25 18 L25 92','M25 18 L55 18 C82 18 82 56 55 56 L25 56','M50 56 L76 92'],
+ S:['M74 28 C66 14 30 12 28 34 C26 54 74 52 74 74 C74 98 32 98 24 80'],
+ T:['M20 18 L80 18','M50 18 L50 92'],
+ U:['M25 18 L25 66 C25 98 75 98 75 66 L75 18'],
+ V:['M20 18 L50 92 L80 18'],
+ W:['M12 18 L30 92 L50 40 L70 92 L88 18'],
+ X:['M22 18 L78 92','M78 18 L22 92'],
+ Y:['M22 18 L50 56','M78 18 L50 56 L50 92'],
+ Z:['M22 18 L78 18 L22 92 L78 92'],
+ '0':['M50 18 C20 18 20 92 50 92 C80 92 80 18 50 18'],
+ '1':['M35 32 L52 18 L52 92'],
+ '2':['M26 34 C28 10 74 10 72 36 C70 54 40 70 24 92 L76 92'],
+ '3':['M26 26 C36 10 72 12 70 34 C68 50 50 54 44 54 C56 54 76 58 74 76 C72 98 34 98 24 82'],
+ '4':['M58 18 L22 68 L80 68','M60 40 L60 92'],
+ '5':['M32 18 L28 52 C40 42 74 44 74 70 C74 98 34 98 24 82','M32 18 L72 18'],
+ '6':['M68 20 C40 14 24 40 24 64 C24 96 74 96 74 68 C74 44 30 44 26 62'],
+ '7':['M24 18 L76 18 L40 92'],
+ '8':['M50 18 C22 18 22 54 50 54 C82 54 82 92 50 92 C18 92 18 54 50 54 C78 54 78 18 50 18'],
+ '9':['M72 40 C72 12 26 12 26 38 C26 62 72 62 72 40 L72 92']
+};
+['A','E','I','O','U'].forEach(v=>{STROKES[{A:'Á',E:'É',I:'Í',O:'Ó',U:'Ú'}[v]]=[...STROKES[v],ACUTE]});
+const WRITE_WORDS=[['MAMÁ','👩','ma... má'],['PAPÁ','👨','pa... pá'],['PROFE','🧑‍🏫','pro... fe'],['MÉDICO','🧑‍⚕️','mé... di... co'],['HERMANA','👧','her... ma... na'],
+ ['HERMANO','👦','her... ma... no'],['BEBÉ','👶','be... bé'],['ABUELA','👵','a... bue... la'],['ABUELO','👴','a... bue... lo'],
+ ['OSO','🐻','o... so'],['SOL','☀️','sol'],['PERA','🍐','pe... ra'],['PATO','🦆','pa... to'],['LUNA','🌙','lu... na'],['CASA','🏠','ca... sa'],['PAN','🍞','pan'],['UVA','🍇','u... va']];
+
 /* ================= generators ================= */
 /* question: {say:[[text,lang]], cap, sub, stage, box, opts:[{v,html,lab,cls}], cols, answer (string|array), names:{v:label}, after:[[..]], afterHtml, lang, es, trace, balloons, label} */
 
@@ -417,7 +470,7 @@ function genGlobosNum(){const n=1+R(10);const opts=numOpts(n,1,10,5);
   return {say:[[`¡Explota el globo del ${NUM_ES[n]}!`]],cap:`Explota el globo del ${n}`,balloons:true,opts:opts.map(numOpt),answer:String(n),label:`Globo del ${n}`,
     wrongSay:v=>`Ese es el ${NUM_ES[+v]}.`}}
 function genTrazaNum(){const n=1+R(10);
-  return {say:[[`Repasa el número ${NUM_ES[n]} con el dedo.`]],cap:`Repasa el ${n}`,trace:String(n),answer:'ok',label:`Repasar el ${n}`,after:[[`¡El ${NUM_ES[n]}!`]]}}
+  return {say:[[`Mira cómo se escribe el ${NUM_ES[n]}.`]],cap:`Escribe el ${n}`,trace:String(n),answer:'ok',label:`Escribir el ${n}`,after:[[`¡El ${NUM_ES[n]}!`]],afterHtml:String(n)}}
 
 function genLetra(){const L=pick(LETTERS);const w=WORDS[L][0];
   return {say:[[`Toca la letra ${LN[L]}`]],cap:'Toca la letra',opts:shuffle([L,...lettersLike(L,2)]).map(x=>({v:x,html:x,lab:x})),answer:L,
@@ -441,9 +494,12 @@ function genGlobosLet(){const L=pick(LETTERS);const opts=shuffle([L,...lettersLi
   return {say:[[`¡Explota el globo de la ${LN[L]}!`]],cap:`Explota el globo de la ${L}`,balloons:true,opts:opts.map(x=>({v:x,html:x,lab:x})),answer:L,label:`Globo de la ${L}`,
     wrongSay:v=>`Esa es la ${LN[v]}.`}}
 function genTrazaLet(){const L=pick(LETTERS);const w=WORDS[L][0];
-  return {say:[[`Repasa la letra ${LN[L]} con el dedo. ${w[2]?'':cap(LN[L])+' de '+low(w[0])+'.'}`]],cap:`Repasa la ${L}`,trace:L,answer:'ok',label:`Repasar la ${L}`,
+  return {say:[[`Mira cómo se escribe la ${LN[L]}.`]],cap:`Escribe la ${L}`,trace:L,answer:'ok',label:`Escribir la ${L}`,
     after:[[`¡La ${LN[L]}!`]],afterHtml:`${w[1]} ${wordHtml(w[0],L,1)}`}}
 
+function genTrazaPal(){const [w,e,syl]=pick(WRITE_WORDS);
+  return {say:[[`Vamos a escribir ${low(w)}. Primero, la ${LN[baseL(w[0])]}.`]],cap:'Escribe la palabra',trace:w,word:{w,e,syl},answer:'ok',label:`Escribir ${w}`,
+    after:[[`${syl}. ¡${cap(low(w))}!`]],afterHtml:`${e} ${[...w].map((c,i)=>`<span style="animation-delay:${i*.07}s">${c}</span>`).join('')}`}}
 function genColor(){const [t,...o]=shuffle(COLORS).slice(0,3);const opts=shuffle([t,...o]);
   return {say:[[`Toca el color ${t[0]}`]],cap:`Toca el color ${t[0]}`,opts:opts.map(colorOpt),answer:t[0],label:`Toca el ${t[0]}`,wrongSay:v=>`Ese es el ${v}.`}}
 function genDeQueColor(){const it=pick(OBJ_COLORS);const t=COLORS.find(c=>c[0]===it[1]);const opts=shuffle([t,...sample(COLORS,2,[t])]);
@@ -543,8 +599,8 @@ function genEmociones(){const em=Object.fromEntries(EMO);
 
 /* ================= catalogue ================= */
 const AREAS=[
- {id:'num',name:'Números',ic:'🔢',c:'#ffc83d',games:['contar','numero','masmenos','despues','globosnum','trazanum']},
- {id:'let',name:'Letras',ic:'🔤',c:'#5cc8f0',games:['abc','letra','empieza','queempieza','vocales','globoslet','trazalet']},
+ {id:'num',name:'Números',ic:'🔢',c:'#ffc83d',games:['trazanum','contar','numero','masmenos','despues','globosnum']},
+ {id:'let',name:'Letras',ic:'🔤',c:'#5cc8f0',games:['abc','trazalet','trazapal','letra','empieza','queempieza','vocales','globoslet']},
  {id:'col',name:'Colores y formas',ic:'🎨',c:'#f2679e',games:['color','dequecolor','formas','series','grande','arriba']},
  {id:'body',name:'Mi cuerpo',ic:'🦴',c:'#2fb35a',games:['cara','cuerpo','articulaciones','huesos','sentidos']},
  {id:'en',name:'English',ic:'🇬🇧',c:'#9b84f5',games:['encolours','enfamily','ennumbers','enanimals','enbody']},
@@ -564,6 +620,7 @@ const GAMES={
  vocales:{name:'Vocales',ic:'🅰️',gen:genVocales,say:'Las vocales'},
  globoslet:{name:'Globos de letras',ic:'🎈',gen:genGlobosLet,say:'¡Globos de letras!'},
  trazalet:{name:'Escribe letras',ic:'✍️',gen:genTrazaLet,say:'Vamos a escribir letras con el dedo',n:4},
+ trazapal:{name:'Escribe palabras',ic:'📝',gen:genTrazaPal,say:'Vamos a escribir palabras',n:3},
  color:{name:'Colores',ic:'🖍️',gen:genColor,say:'Los colores'},
  dequecolor:{name:'¿De qué color es?',ic:'🍌',gen:genDeQueColor,say:'¿De qué color es?'},
  formas:{name:'Formas',ic:'🔺',gen:genFormas,say:'Las formas'},
@@ -733,16 +790,18 @@ function renderQ(){show('game');const pid=G.pids[G.i%G.pids.length];const p=P(pi
   let body='';
   if(q.balloons){const cols=['#ef4b3f','#2f6fe4','#2fb35a','#f2679e','#7d5cf0','#ff8a2b','#ffc83d'];const n=q.opts.length;
     body=`<div class="sky">${q.opts.map((o,i)=>`<button class="bal" data-v="${esc(o.v)}" style="--col:${cols[(i+R(7))%7]};left:${(i*(92/n)+R(5)).toFixed(1)}%;animation-duration:${(8+Math.random()*3).toFixed(1)}s;animation-delay:-${(Math.random()*7).toFixed(1)}s"><span>${o.html}</span></button>`).join('')}</div>`}
-  else if(q.trace){body=`<div class="trace" id="trace"><canvas id="tg"></canvas><canvas id="td"></canvas></div>
-    <div class="colors">${['#2f6fe4','#ef4b3f','#2fb35a','#7d5cf0','#ff8a2b'].map((c,i)=>`<button data-act="pen" data-c="${c}" style="--col:${c}" aria-pressed="${i===0}" aria-label="Color"></button>`).join('')}</div>
-    <div class="tracebtns"><button class="btn" data-act="tclear">🧽 Borrar</button><button class="btn green" data-act="tcheck">✓ ¡Ya está!</button></div>`}
+  else if(q.trace){const pc=(TR&&TR.color)||'#2f6fe4';
+    body=(q.word?`<div class="wordrow"><span class="wem">${q.word.e}</span><div class="wordline">${[...q.word.w].map((c,i)=>`<span class="${i===0?'cur':''}">${c}</span>`).join('')}</div></div>`:'')+
+    `<div class="trace" id="trace"><canvas id="tg"></canvas><canvas id="td"></canvas></div>
+    <div class="colors">${['#2f6fe4','#ef4b3f','#2fb35a','#7d5cf0','#ff8a2b'].map(c=>`<button data-act="pen" data-c="${c}" style="--col:${c}" aria-pressed="${c===pc}" aria-label="Color"></button>`).join('')}</div>
+    <div class="tracebtns"><button class="btn yellow" data-act="tdemo">👀 Mira</button><button class="btn" data-act="tclear">🧽 Borrar</button></div>`}
   else{body=(q.stage?`<div class="stage${q.box?' box':''}" id="stage">${q.stage}</div>`:'')+
     (q.opts?`<div class="opts" style="--n:${q.cols||q.opts.length}">${q.opts.map(o=>`<button class="opt ${o.cls||''}" data-v="${esc(o.v)}">${o.html}</button>`).join('')}</div>`:'')}
   app.innerHTML=`<div class="gtop"><button class="round" data-act="quit" aria-label="Salir">✕</button><div class="dots" id="dots">${dots}</div>
     ${q.lang==='en'?'<button class="round helpbtn" data-act="es" aria-label="En español">🇪🇸</button>':''}<button class="round" data-act="repeat" aria-label="Repetir">🔊</button></div>
    ${G.pids.length>1?`<div class="turn" style="--c:${avOf(p)[1]}">${avHtml(p)} Le toca a ${esc(p.name)}</div>`:''}
    <div class="caption">${esc(q.cap)}${q.sub?`<small>${esc(q.sub)}</small>`:''}</div>${body}<div class="after" id="after"></div>`;
-  if(q.trace)setupTrace(q.trace);
+  if(q.trace)startTraceQ(q);
   const intro=[];if(!G.introDone){G.introDone=true;const g=GAMES[gid];if(!G.mix)intro.push([g.say,g.lang]);}
   if(G.pids.length>1)intro.push([`Le toca a ${p.name.toLowerCase()}.`]);
   speak([...intro,...q.say])}
@@ -771,38 +830,75 @@ async function answer(v,el){if(!G||G.locked||el.classList.contains('no'))return;
 function countTap(c){c.classList.toggle('cnt');const n=app.querySelectorAll('.it.cnt').length;const b=app.querySelector('.cntbadge');
   if(b){b.hidden=!n;b.textContent=n}sTap();if(n)speak(G.q.countLang==='en'?[[NUM_EN[n]||String(n),'en']]:[[NUM_ES[n]]])}
 
-/* ---- tracing ---- */
-let TR=null;
-async function setupTrace(ch){const box=$('trace'),tg=$('tg'),td=$('td');const size=box.clientWidth;const dpr=Math.min(window.devicePixelRatio||1,3);
+/* ---- guided tracing: green start dot, arrow, animated demo, stroke-by-stroke check ---- */
+let TR=null,_sp=null;const TOL=12;
+function samplePath(d,step=2.5){if(!_sp){const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('width','0');s.setAttribute('height','0');
+    s.style.cssText='position:absolute;left:-10px;top:-10px';_sp=document.createElementNS('http://www.w3.org/2000/svg','path');s.appendChild(_sp);document.body.appendChild(s)}
+  _sp.setAttribute('d',d);const L=_sp.getTotalLength();const n=Math.max(2,Math.ceil(L/step));const pts=[];
+  for(let i=0;i<=n;i++){const q=_sp.getPointAtLength(L*i/n);pts.push([q.x,q.y])}return {pts,len:L}}
+function glyphStrokes(text){let x=0;const out=[];[...text].forEach(ch=>{(STROKES[ch]||[]).forEach(d=>{const s=samplePath(d);out.push({d,dx:x,pts:s.pts.map(([a,b])=>[a+x,b]),len:s.len})});x+=ch==='1'?55:85});return out}
+const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+function setupTrace(text,onDone){const box=$('trace'),tg=$('tg'),td=$('td');if(!box)return;const size=box.clientWidth;const dpr=Math.min(window.devicePixelRatio||1,3);
   [tg,td].forEach(c=>{c.width=size*dpr;c.height=size*dpr});
-  try{if(document.fonts)await Promise.race([document.fonts.load('700 200px Fredoka'),sleep(1500)])}catch(e){}
-  if(!TR||TR.box!==box){}
-  const font=fs=>`700 ${fs}px Fredoka, "Arial Rounded MT Bold", Arial, sans-serif`;
-  const place=ctx=>{let fs=size*.8;ctx.font=font(fs);let m=ctx.measureText(ch);if(m.width>size*.84){fs=fs*size*.84/m.width;ctx.font=font(fs);m=ctx.measureText(ch)}
-    const asc=m.actualBoundingBoxAscent||fs*.72,desc=m.actualBoundingBoxDescent||0;return {x:size/2,y:size/2+(asc-desc)/2}};
-  const g=tg.getContext('2d');g.scale(dpr,dpr);g.textAlign='center';g.textBaseline='alphabetic';let pos=place(g);
-  g.fillStyle='#e4eaf8';g.fillText(ch,pos.x,pos.y);g.setLineDash([6,7]);g.lineWidth=2.5;g.strokeStyle='#9aa8d6';g.strokeText(ch,pos.x,pos.y);
-  // masks at 1x for sampling
-  const mk=extra=>{const c=document.createElement('canvas');c.width=c.height=size;const x=c.getContext('2d');x.textAlign='center';x.textBaseline='alphabetic';const p=place(x);
-    x.fillStyle='#000';x.fillText(ch,p.x,p.y);if(extra){x.lineWidth=extra;x.lineJoin='round';x.strokeStyle='#000';x.strokeText(ch,p.x,p.y)}return x.getImageData(0,0,size,size).data};
-  const inner=mk(0),outer=mk(size*.11);const step=Math.max(4,Math.round(size/45));const targets=[],grid=[];
-  for(let y=step/2;y<size;y+=step)for(let x=step/2;x<size;x+=step){const i=(Math.floor(y)*size+Math.floor(x))*4;grid.push([x,y,outer[i+3]>100]);if(inner[i+3]>100)targets.push([x,y])}
-  const d=td.getContext('2d');d.scale(dpr,dpr);d.lineCap='round';d.lineJoin='round';d.lineWidth=size*.085;
-  TR={box,td,d,dpr,size,targets,grid,color:'#2f6fe4',drawing:false,last:null,done:false};d.strokeStyle=TR.color;
-  const pt=e=>{const r=td.getBoundingClientRect();return [(e.clientX-r.left)*size/r.width,(e.clientY-r.top)*size/r.height]};
-  td.addEventListener('pointerdown',e=>{e.preventDefault();try{td.setPointerCapture(e.pointerId)}catch(_){}TR.drawing=true;TR.last=pt(e);d.strokeStyle=TR.color;d.beginPath();d.moveTo(...TR.last);d.lineTo(TR.last[0]+.1,TR.last[1]+.1);d.stroke()});
-  td.addEventListener('pointermove',e=>{if(!TR.drawing)return;e.preventDefault();const p=pt(e);d.beginPath();d.moveTo(...TR.last);d.lineTo(...p);d.stroke();TR.last=p});
-  const up=()=>{if(!TR.drawing)return;TR.drawing=false;const r=traceScore();if(r.cov>=.72&&r.out<.38)traceOk()};
-  td.addEventListener('pointerup',up);td.addEventListener('pointercancel',up);td.addEventListener('pointerleave',up)}
-function traceScore(){const {td,dpr,size,targets,grid}=TR;const img=td.getContext('2d').getImageData(0,0,td.width,td.height).data;
-  const drawn=(x,y)=>img[((Math.floor(y*dpr))*td.width+Math.floor(x*dpr))*4+3]>40;
-  let hit=0;targets.forEach(([x,y])=>{if(drawn(x,y))hit++});let dn=0,out=0;grid.forEach(([x,y,ins])=>{if(drawn(x,y)){dn++;if(!ins)out++}});
-  return {cov:targets.length?hit/targets.length:0,out:dn?out/dn:0}}
-function traceOk(){if(!TR||TR.done)return;TR.done=true;answer('ok',TR.box)}
-function traceCheck(){if(!TR||TR.done)return;const r=traceScore();
-  if(r.cov>=.5&&r.out<.5)traceOk();
-  else{sBad();speak(r.out>=.5?'Intenta ir por dentro de la línea. ¡Tú puedes!':r.cov<.15?'Pasa el dedo por encima de la letra gris.':'¡Casi! Repasa un poquito más.')}}
-function traceClear(){if(!TR)return;TR.d.clearRect(0,0,TR.size,TR.size)}
+  const strokes=glyphStrokes(text);let mn=1e9,mx=-1e9;strokes.forEach(st=>st.pts.forEach(([x])=>{mn=Math.min(mn,x);mx=Math.max(mx,x)}));
+  const s=Math.min(size*.84/100,size*.84/(mx-mn+20));const ox=size/2-s*(mn+mx)/2,oy=size/2-s*52;
+  const tok=(TR&&TR.tok||0)+1;
+  TR={tok,text,box,tg,td,dpr,size,s,ox,oy,strokes,si:0,next:0,color:(TR&&TR.color)||'#2f6fe4',demo:false,done:false,onDone,drawing:false,last:null,hintAt:0};
+  if(!td._bound){td._bound=1;
+    const pt=e=>{const r=td.getBoundingClientRect();const cx=(e.clientX-r.left)*TR.size/r.width,cy=(e.clientY-r.top)*TR.size/r.height;return [(cx-TR.ox)/TR.s,(cy-TR.oy)/TR.s]};
+    td.addEventListener('pointerdown',e=>{e.preventDefault();if(!TR||TR.demo||TR.done)return;try{td.setPointerCapture(e.pointerId)}catch(_){}
+      const p=pt(e);TR.drawing=true;TR.last=p;inkDot(p);
+      const st=TR.strokes[TR.si];const anchor=st.pts[Math.max(0,TR.next-1)];TR.armed=dist(p,anchor)<TOL*1.8;
+      if(!TR.armed&&Date.now()-TR.hintAt>3000){TR.hintAt=Date.now();speak(TR.next===0?'Empieza en el punto verde.':'Sigue desde donde lo has dejado.');pulseStart()}
+      advance(p)});
+    td.addEventListener('pointermove',e=>{if(!TR||!TR.drawing)return;e.preventDefault();const p=pt(e);inkLine(TR.last,p);
+      const steps=Math.max(1,Math.ceil(dist(TR.last,p)/3));for(let i=1;i<=steps;i++){if(!TR.drawing)break;advance([TR.last[0]+(p[0]-TR.last[0])*i/steps,TR.last[1]+(p[1]-TR.last[1])*i/steps])}TR.last=p});
+    const up=()=>{if(!TR||!TR.drawing)return;TR.drawing=false;
+      if(!TR.done&&TR.next<3&&Date.now()-TR.hintAt>3000){TR.hintAt=Date.now();speak('Sigue la flecha desde el punto verde.');pulseStart()}};
+    td.addEventListener('pointerup',up);td.addEventListener('pointercancel',up)}
+  drawGuide();setTimeout(()=>{if(TR&&TR.tok===tok)runDemo()},500)}
+function bctx(c){const x=c.getContext('2d');x.setTransform(TR.dpr*TR.s,0,0,TR.dpr*TR.s,TR.dpr*TR.ox,TR.dpr*TR.oy);x.lineCap='round';x.lineJoin='round';return x}
+function strokePath(x,st){x.save();x.translate(st.dx,0);x.stroke(new Path2D(st.d));x.restore()}
+function polyline(x,pts,upto){if(upto<1)return;x.beginPath();x.moveTo(...pts[0]);for(let i=1;i<=Math.min(upto,pts.length-1);i++)x.lineTo(...pts[i]);x.stroke()}
+function drawGuide(){const x=TR.tg.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,TR.tg.width,TR.tg.height);const c=bctx(TR.tg);
+  TR.strokes.forEach((st,i)=>{c.setLineDash([]);c.lineWidth=15;c.strokeStyle=i<TR.si?TR.color:i===TR.si?'#ffe9a0':'#e6ebf7';strokePath(c,st);
+    if(i>=TR.si){c.lineWidth=1.6;c.setLineDash([3,4]);c.strokeStyle='#9aa8d6';strokePath(c,st);c.setLineDash([])}});
+  if(TR.done)return;const st=TR.strokes[TR.si];
+  c.lineWidth=15;c.strokeStyle=TR.color;polyline(c,st.pts,TR.next);
+  // arrow along the current stroke
+  const k=Math.min(st.pts.length-3,Math.max(TR.next+6,Math.round(st.pts.length*.3)));if(k>2){const a=st.pts[k-2],b=st.pts[k+2]||st.pts[k];const ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
+    c.save();c.translate(st.pts[k][0],st.pts[k][1]);c.rotate(ang);c.fillStyle='#2fb35a';c.beginPath();c.moveTo(6,0);c.lineTo(-4,-5);c.lineTo(-4,5);c.closePath();c.fill();c.restore()}
+  // green start dot with stroke number
+  if(TR.next===0){const [sx,sy]=st.pts[0];c.fillStyle='#2fb35a';c.strokeStyle='#fff';c.lineWidth=1.6;c.beginPath();c.arc(sx,sy,7,0,Math.PI*2);c.fill();c.stroke();
+    if(TR.strokes.length>1){c.fillStyle='#fff';c.font='700 9px Fredoka, Arial, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(TR.si+1,sx,sy+.5)}}}
+function pulseStart(){if(!TR||TR.done)return;const st=TR.strokes[TR.si];let t=0;const tok=TR.tok;
+  const f=()=>{if(!TR||TR.tok!==tok||TR.next>0)return;drawGuide();const c=bctx(TR.tg);c.strokeStyle='rgba(47,179,90,'+(1-t/30)+')';c.lineWidth=2.5;c.beginPath();c.arc(st.pts[0][0],st.pts[0][1],7+t*.5,0,Math.PI*2);c.stroke();
+    if(++t<30)requestAnimationFrame(f);else drawGuide()};f()}
+function inkCtx(){const c=bctx(TR.td);c.strokeStyle=TR.color;c.globalAlpha=.45;c.lineWidth=8;return c}
+function inkDot(p){const c=inkCtx();c.beginPath();c.moveTo(...p);c.lineTo(p[0]+.1,p[1]+.1);c.stroke()}
+function inkLine(a,b){const c=inkCtx();c.beginPath();c.moveTo(...a);c.lineTo(...b);c.stroke()}
+function clearInk(){if(!TR)return;const x=TR.td.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,TR.td.width,TR.td.height)}
+function advance(p){if(TR.done||!TR.armed)return;const st=TR.strokes[TR.si];const old=TR.next;
+  for(let j=TR.next;j<Math.min(TR.next+10,st.pts.length);j++)if(dist(p,st.pts[j])<TOL)TR.next=j+1;
+  if(TR.next>=st.pts.length-1){TR.si++;TR.next=0;TR.armed=false;clearInk();sTap();
+    if(TR.si>=TR.strokes.length){TR.done=true;TR.drawing=false;drawGuide();const tok=TR.tok;setTimeout(()=>{if(TR&&TR.tok===tok&&TR.onDone)TR.onDone()},250);return}
+    drawGuide();return}
+  if(TR.next!==old)drawGuide()}
+function runDemo(){if(!TR||TR.done)return;const tok=TR.tok;TR.demo=true;TR.drawing=false;clearInk();const strokes=TR.strokes.slice(TR.si);let i=0,t0=null;
+  const step=ts=>{if(!TR||TR.tok!==tok)return;if(t0===null)t0=ts;const st=strokes[i];const dur=Math.max(500,st.len*11);const f=Math.min(1,(ts-t0)/dur);
+    const x=TR.td.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,TR.td.width,TR.td.height);const c=bctx(TR.td);c.lineWidth=10;c.strokeStyle='#ff8a2b';
+    for(let k=0;k<i;k++)polyline(c,strokes[k].pts,strokes[k].pts.length-1);const n=Math.round(f*(st.pts.length-1));polyline(c,st.pts,n);
+    const hp=st.pts[n];c.font='16px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('✏️',hp[0]+7,hp[1]-8);
+    if(f>=1){i++;t0=null}
+    if(i<strokes.length)requestAnimationFrame(step);
+    else setTimeout(()=>{if(!TR||TR.tok!==tok)return;clearInk();TR.demo=false;drawGuide();pulseStart();
+      try{if(!window.speechSynthesis||!speechSynthesis.speaking)speak('¡Ahora tú! Empieza en el punto verde.')}catch(e){}},500)};
+  requestAnimationFrame(step)}
+function startTraceQ(q){if(!q.word){setupTrace(q.trace,()=>answer('ok',$('trace')));return}
+  const chars=[...q.word.w];let k=0;
+  const go=()=>setupTrace(chars[k],()=>{const spans=app.querySelectorAll('.wordline span');spans[k].className='done';k++;
+    if(k<chars.length){spans[k].className='cur';speak(`¡Muy bien! Ahora, la ${LN[baseL(chars[k])]}.`);go()}else answer('ok',$('trace'))});
+  go()}
 
 /* ---- end of round ---- */
 function endRound(){show('end');const k=G.res.filter(Boolean).length;const p=me();const multi=G.pids.length>1;
@@ -905,9 +1001,9 @@ function act(a,el){const id=el.dataset.id;
    case 'quit':backFromGame();break;
    case 'repeat':if(G)speak(G.q.say);break;
    case 'es':if(G&&G.q.es)speak([[G.q.es]]);break;
-   case 'pen':TR&&(TR.color=el.dataset.c);app.querySelectorAll('.colors button').forEach(b=>b.setAttribute('aria-pressed',b===el));break;
-   case 'tclear':traceClear();break;
-   case 'tcheck':traceCheck();break;
+   case 'pen':if(TR){TR.color=el.dataset.c;drawGuide()}app.querySelectorAll('.colors button').forEach(b=>b.setAttribute('aria-pressed',b===el));break;
+   case 'tclear':clearInk();break;
+   case 'tdemo':if(TR&&!TR.demo&&!TR.done){speak('Mira.');runDemo()}break;
    case 'again':startRound(G.gids,G.mix,G.back);break;
    case 'back':backFromGame();break;
    case 'closestk':{const rest=layer._next||[];layer.innerHTML='';showStickers(rest);break}
