@@ -397,11 +397,11 @@ function tableSvg(top,bottom){return `<svg viewBox="0 0 300 300">
 /* ================= generators ================= */
 /* question: {say:[[text,lang]], cap, sub, stage, box, opts:[{v,html,lab,cls}], cols, answer (string|array), names:{v:label}, after:[[..]], afterHtml, lang, es, trace, balloons, label} */
 
-function genContar(){const n=R(10)<7?1+R(10):11+R(10);const em=pick(COUNT_EM);
+function genContar(){const n=1+R(10);const em=pick(COUNT_EM);
   return {say:[['¿Cuántos hay? Puedes tocarlos para contar.']],cap:'¿Cuántos hay?',stage:itemsHtml(n,em)+'<div class="cntbadge" hidden></div>',box:true,
-    opts:numOpts(n,1,20).map(numOpt),answer:String(n),after:[[`¡Hay ${NUM_ES[n]}!`]],afterHtml:String(n),label:`Contar: ${n} ${em}`}}
-function genNumero(){const n=R(10)<6?1+R(10):11+R(10);
-  return {say:[[`Toca el número ${NUM_ES[n]}`]],cap:'Toca el número',opts:numOpts(n,0,20).map(numOpt),answer:String(n),label:`Toca el número ${n}`,
+    opts:numOpts(n,1,10).map(numOpt),answer:String(n),after:[[`¡Hay ${NUM_ES[n]}!`]],afterHtml:String(n),label:`Contar: ${n} ${em}`}}
+function genNumero(){const n=1+R(10);
+  return {say:[[`Toca el número ${NUM_ES[n]}`]],cap:'Toca el número',opts:numOpts(n,1,10).map(numOpt),answer:String(n),label:`Toca el número ${n}`,
     wrongSay:v=>`Ese es el ${NUM_ES[+v]}.`}}
 function genMasMenos(){let a=1+R(9),b=1+R(9);while(a===b)b=1+R(9);const mas=R(2)===0;const em=pick(COUNT_EM);
   const grp=n=>Array(n).fill(em).join('');const ans=(mas?(a>b):(a<b))?'L':'R';
@@ -409,14 +409,14 @@ function genMasMenos(){let a=1+R(9),b=1+R(9);while(a===b)b=1+R(9);const mas=R(2)
     opts:[{v:'L',html:grp(a),lab:`grupo de ${a}`,cls:'grp'},{v:'R',html:grp(b),lab:`grupo de ${b}`,cls:'grp'}],answer:ans,
     after:[[mas?`¡Sí! ${cap(NUM_ES[Math.max(a,b)])} es más que ${NUM_ES[Math.min(a,b)]}.`:`¡Sí! ${cap(NUM_ES[Math.min(a,b)])} es menos que ${NUM_ES[Math.max(a,b)]}.`]],
     label:`${mas?'Más':'Menos'}: ${a} vs ${b}`,wrongSay:v=>`Aquí hay ${NUM_ES[v==='L'?a:b]}. Cuenta otra vez.`}}
-function genDespues(){const n=1+R(17);
+function genDespues(){const n=1+R(7);
   return {say:[[`${NUM_ES[n]}, ${NUM_ES[n+1]}... ¿Qué número va después?`]],cap:'¿Qué número va después?',
-    stage:`<div class="numline"><div>${n}</div><div>${n+1}</div><div class="q">?</div></div>`,opts:numOpts(n+2,1,20).map(numOpt),answer:String(n+2),
+    stage:`<div class="numline"><div>${n}</div><div>${n+1}</div><div class="q">?</div></div>`,opts:numOpts(n+2,1,10).map(numOpt),answer:String(n+2),
     after:[[`${NUM_ES[n]}, ${NUM_ES[n+1]}, ${NUM_ES[n+2]}.`]],label:`Después de ${n}, ${n+1}`}}
-function genGlobosNum(){const n=1+R(20);const opts=numOpts(n,1,20,5);
+function genGlobosNum(){const n=1+R(10);const opts=numOpts(n,1,10,5);
   return {say:[[`¡Explota el globo del ${NUM_ES[n]}!`]],cap:`Explota el globo del ${n}`,balloons:true,opts:opts.map(numOpt),answer:String(n),label:`Globo del ${n}`,
     wrongSay:v=>`Ese es el ${NUM_ES[+v]}.`}}
-function genTrazaNum(){const n=R(5)===0?10+R(11):1+R(9);
+function genTrazaNum(){const n=1+R(10);
   return {say:[[`Repasa el número ${NUM_ES[n]} con el dedo.`]],cap:`Repasa el ${n}`,trace:String(n),answer:'ok',label:`Repasar el ${n}`,after:[[`¡El ${NUM_ES[n]}!`]]}}
 
 function genLetra(){const L=pick(LETTERS);const w=WORDS[L][0];
