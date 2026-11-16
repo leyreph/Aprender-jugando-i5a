@@ -841,7 +841,7 @@ function openLock(){const a=3+R(7),b=3+R(7);lockAns=a*b;hush();
   layer.innerHTML=`<div class="sheet"><div class="card lock"><h2 style="font-size:1.4rem">Rincón para mayores</h2><p class="muted">¿Cuánto es ${a} × ${b}?</p>
    <input id="lockin" inputmode="numeric" autocomplete="off"><div style="display:flex;gap:.6rem;justify-content:center">
    <button class="btn" data-act="closesheet">Cancelar</button><button class="btn blue" data-act="unlock">Entrar</button></div></div></div>`;
-  setTimeout(()=>$('lockin').focus(),50);$('lockin').addEventListener('keydown',e=>{if(e.key==='Enter')unlock()})}
+  setTimeout(()=>{const i=$('lockin');if(i)i.focus()},50);$('lockin').addEventListener('keydown',e=>{if(e.key==='Enter')unlock()})}
 function unlock(){if(+$('lockin').value===lockAns)renderParents(curId||(players[0]&&players[0].id));else{$('lockin').value='';$('lockin').placeholder='¡Prueba otra vez!'}}
 const pct=(a,b)=>b?Math.round(a/b*100):0;
 function renderParents(pid){const p=P(pid);let h=`<div class="wrap"><div class="top"><h1 class="grow" style="font-size:1.35rem;text-transform:none">👨‍👩‍👧‍👦 Rincón para mamá y papá</h1><button class="round" data-act="closesheet" aria-label="Cerrar">✕</button></div>`;
@@ -878,6 +878,9 @@ async function sendSug(){const t=$('sug').value.trim(),m=$('sugmsg');if(!t){m.te
     const j=await res.json();if(j.success){m.textContent='¡Enviado, gracias!';$('sug').value=''}else m.textContent='No se ha podido enviar.'}catch(e){m.textContent='No se ha podido enviar (¿sin conexión?).'}}
 
 /* ================= actions ================= */
+/* two-tap confirmation (confirm() is blocked in some embedded viewers) */
+function sure(el){if(el.dataset.sure)return true;el.dataset.sure=1;el.dataset.txt=el.textContent;el.textContent='¿Seguro? Toca otra vez';
+  setTimeout(()=>{if(el.isConnected){delete el.dataset.sure;el.textContent=el.dataset.txt}},4000);return false}
 function backFromGame(){const b=G&&G.back;G=null;if(!b||b==='home')renderHome();else renderArea(b)}
 function act(a,el){const id=el.dataset.id;
   switch(a){
@@ -912,8 +915,8 @@ function act(a,el){const id=el.dataset.id;
    case 'unlock':unlock();break;
    case 'closesheet':layer.innerHTML='';if(!me()){renderPlayers()}else if(screen==='home')renderHome();else if(screen==='album')renderAlbum();break;
    case 'ptab':renderParents(id);break;
-   case 'resetpl':{const x=P(id);if(x&&confirm(`¿Borrar estrellas, pegatinas y progreso de ${x.name}?`)){x.stars=0;x.stats={};x.fails=[];save();renderParents(id)}break}
-   case 'delpl':{const x=P(id);if(x&&confirm(`¿Borrar a ${x.name} y todo su progreso?`)){players=players.filter(y=>y.id!==id);if(curId===id)curId=players[0]?players[0].id:null;turns=null;save();
+   case 'resetpl':{const x=P(id);if(x&&sure(el)){x.stars=0;x.stats={};x.fails=[];save();renderParents(id)}break}
+   case 'delpl':{const x=P(id);if(x&&sure(el)){players=players.filter(y=>y.id!==id);if(curId===id)curId=players[0]?players[0].id:null;turns=null;save();
      if(players.length)renderParents(curId);else{layer.innerHTML='';renderPlayers()}}break}
    case 'cycleav':{const x=P(id);x.av=(x.av+1)%AVATARS.length;save();renderParents(layer.querySelector('.tabs [aria-pressed=true]')?.dataset.id||id);break}
    case 'addfromparents':layer.innerHTML='';draft=null;renderAdd();break;
