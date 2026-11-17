@@ -275,6 +275,8 @@ textarea{width:100%;min-height:6rem;padding:.6rem;border:.15rem solid var(--ink)
 .minialbum div.got{border:.13rem solid var(--ink);background:#fff}
 .minialbum div.miss span{filter:brightness(0);opacity:.12}
 .stkcard .prog{margin:.4rem 0 0;padding:0;border:0;box-shadow:none;background:none}
+.homebtn{background:var(--sun)}
+.secttl .homebtn{margin-left:auto}
 </style>
 </head>
 <body>
@@ -733,7 +735,8 @@ const WRONG=['¡Casi! Prueba otra vez.','Uy, ese no. ¡Inténtalo otra vez!','Mm
 const PRAISE_EN=['Well done!','Great job!','Super!','Brilliant!'];
 
 /* ================= players screen ================= */
-function show(name){screen=name;hush();layer.innerHTML='';window.scrollTo(0,0)}
+const homeBtn=()=>`<button class="round homebtn" data-act="home" aria-label="Inicio">🏠</button>`;
+function show(name){screen=name;hush();if(name!=='game'){TR=null}layer.innerHTML='';window.scrollTo(0,0)}
 function renderPlayers(){show('players');
   app.innerHTML=`<div class="deco-row">${['🎨','🔢','🦁','🔤','🎈','🦴','⭐'].map((e,i)=>`<span style="animation-delay:${i*.35}s">${e}</span>`).join('')}</div><h1 class="who-title">¿Quién juega?</h1><p class="who-sub">${players.length?'Toca tu animal':'Toca el + para crear un jugador'}</p>
   <div class="players">${players.map(p=>`<button class="card pl" data-act="pick" data-id="${p.id}">${avHtml(p)}<b>${esc(p.name)}</b></button>`).join('')}
@@ -758,7 +761,7 @@ function savePlayer(){const name=($('nm').value||'').trim();if(!name){$('nm').fo
 function topBar(){const p=me();
   const chip=turns?`<button class="chip" data-act="players">${turns.map(id=>avHtml(P(id))).join('')}<b>Por turnos</b></button>`
     :`<button class="chip" data-act="players" aria-label="Cambiar de jugador">${avHtml(p)}<b>${esc(p.name)}</b></button>`;
-  return `<div class="top">${chip}<div class="grow"></div>${turns?'':`<div class="starcount" id="starc">⭐ ${p.stars}</div>`}
+  return `<div class="top">${screen!=='home'?homeBtn():''}${chip}<div class="grow"></div>${turns?'':`<div class="starcount" id="starc">⭐ ${p.stars}</div>`}
     <button class="round" data-act="parents" aria-label="Rincón para mayores">⚙️</button></div>`}
 function miniAlbum(p){const n=stickersOf(p);const ai=Math.min(Math.floor(n/24),ALBUMS.length-1);const al=ALBUMS[ai];const k=p.stars%STARS_PER_STICKER;
   const done=ALBUMS.filter((a,i)=>n>=(i+1)*24);
@@ -778,19 +781,19 @@ function renderHome(){if(!me()){renderPlayers();return}show('home');const p=me()
   (turns?'':miniAlbum(p))}
 
 function renderArea(aid){show('area');const a=AREAS.find(x=>x.id===aid);G=null;
-  app.innerHTML=topBar()+`<div class="secttl"><button class="round" data-act="home" aria-label="Inicio">←</button><span class="ic">${a.ic}</span><h1>${a.name}</h1></div>
+  app.innerHTML=topBar()+`<div class="secttl"><span class="ic">${a.ic}</span><h1>${a.name}</h1></div>
   <div class="tiles">${a.games.map(gid=>{const g=GAMES[gid];return `<button class="tile" style="--c:${a.c}" data-act="game" data-id="${gid}"><span class="ic">${g.ic}</span><span class="nm">${g.name}</span></button>`}).join('')}
   ${a.games.filter(g=>!GAMES[g].explore).length>1?`<button class="tile wide" style="--c:${a.c}" data-act="mixarea" data-id="${aid}"><span class="ic">🔀</span><span class="nm">Todo mezclado</span></button>`:''}</div>`}
 
 /* ================= alphabet explorer ================= */
 const ABC_COLS=['#ffd86b','#a6e4ff','#ffc4e1','#b9ef7a','#e2c8ff','#ffc29a'];
 function renderAbc(){show('abc');
-  app.innerHTML=`<div class="secttl"><button class="round" data-act="area" data-id="let" aria-label="Volver">←</button><span class="ic">📖</span><h1>Abecedario</h1></div>
+  app.innerHTML=`<div class="secttl"><button class="round" data-act="area" data-id="let" aria-label="Volver">←</button><span class="ic">📖</span><h1>Abecedario</h1>${homeBtn()}</div>
   <div class="abc">${LETTERS.map((L,i)=>`<button data-act="letter" data-l="${L}" style="--c:${ABC_COLS[i%ABC_COLS.length]}">${L}<small>${WORDS[L][0][1]}</small></button>`).join('')}</div>`}
 function letterSay(L){const ws=WORDS[L];const st=ws.find(w=>!w[2]);
   return st?`La ${LN[L]}. ${cap(LN[L])} de ${low(st[0])}.`:`La ${LN[L]}. La ${LN[L]} está en ${low(ws[0][0])}.`}
 function renderLetter(L){show('letter');abcL=L;const i=LETTERS.indexOf(L);const col=ABC_COLS[i%ABC_COLS.length];
-  app.innerHTML=`<div class="secttl"><button class="round" data-act="abc" aria-label="Volver">←</button><h1>La letra ${L}</h1></div>
+  app.innerHTML=`<div class="secttl"><button class="round" data-act="abc" aria-label="Volver">←</button><h1>La letra ${L}</h1>${homeBtn()}</div>
   <div class="letterhead"><button class="round" data-act="letter" data-l="${LETTERS[(i+26)%27]}" aria-label="Anterior">◀</button>
    <div class="biglet" style="--c:${col}" data-act="sayletter">${L}</div>
    <button class="round" data-act="letter" data-l="${LETTERS[(i+1)%27]}" aria-label="Siguiente">▶</button></div>
@@ -824,7 +827,7 @@ function renderQ(){show('game');const pid=G.pids[G.i%G.pids.length];const p=P(pi
     <div class="tracebtns"><button class="btn yellow" data-act="tdemo">👀 Mira</button><button class="btn" data-act="tclear">🧽 Borrar</button></div>`}
   else{body=(q.stage?`<div class="stage${q.box?' box':''}" id="stage">${q.stage}</div>`:'')+
     (q.opts?`<div class="opts" style="--n:${q.cols||q.opts.length}">${q.opts.map(o=>`<button class="opt ${o.cls||''}" data-v="${esc(o.v)}">${o.html}</button>`).join('')}</div>`:'')}
-  app.innerHTML=`<div class="gtop"><button class="round" data-act="quit" aria-label="Salir">✕</button><div class="dots" id="dots">${dots}</div>
+  app.innerHTML=`<div class="gtop"><button class="round" data-act="quit" aria-label="Salir">✕</button>${homeBtn()}<div class="dots" id="dots">${dots}</div>
     ${q.lang==='en'?'<button class="round helpbtn" data-act="es" aria-label="En español">🇪🇸</button>':''}<button class="round" data-act="repeat" aria-label="Repetir">🔊</button></div>
    ${G.pids.length>1?`<div class="turn" style="--c:${avOf(p)[1]}">${avHtml(p)} Le toca a ${esc(p.name)}</div>`:''}
    <div class="caption">${esc(q.cap)}${q.sub?`<small>${esc(q.sub)}</small>`:''}</div>${body}<div class="after" id="after"></div>`;
@@ -934,7 +937,7 @@ function endRound(){show('end');const k=G.res.filter(Boolean).length;const p=me(
    <div class="endstars">${G.res.map((r,i)=>`<span style="animation-delay:${.2+i*.12}s">${r?'⭐':'⚪'}</span>`).join('')}</div>
    ${multi?`<div class="byplayer">${G.pids.map(id=>`<div>${avHtml(P(id))} ⭐ ${G.by[id]}</div>`).join('')}</div>`:''}
    <div class="endbtns"><button class="btn yellow" data-act="again">🔁 Otra vez</button>
-   <button class="btn" data-act="back">${G.back==='home'?'🏠 Inicio':'← Volver'}</button></div></div>`;
+   <button class="btn" data-act="back">${G.back==='home'?'🏠 Inicio':'← Volver'}</button>${G.back!=='home'?'<button class="btn" data-act="home">🏠 Inicio</button>':''}</div></div>`;
   sWin();confetti(50);
   const msg=multi?`¡Muy bien! ${G.pids.map(id=>`${P(id).name.toLowerCase()}, ${G.by[id]} ${G.by[id]===1?'estrella':'estrellas'}`).join('. ')}.`
     :k?`¡Muy bien, ${p.name.toLowerCase()}! Has ganado ${k===1?'una estrella':k+' estrellas'}.`:'¡Muy bien! Has terminado. ¡Seguro que la próxima vez consigues estrellas!';
@@ -951,7 +954,7 @@ function showStickers(list){if(!list.length||screen!=='end')return;const s=list.
 function renderAlbum(ai){show('album');const p=me();const n=stickersOf(p);const total=ALBUMS.length*24;
   const curAl=Math.min(Math.floor(n/24),ALBUMS.length-1);if(ai==null)ai=curAl;
   const done=ALBUMS.map((a,i)=>n>=(i+1)*24);
-  app.innerHTML=topBar()+`<div class="secttl"><button class="round" data-act="home" aria-label="Inicio">←</button><span class="ic">📒</span><h1>Mis pegatinas</h1></div>
+  app.innerHTML=topBar()+`<div class="secttl"><span class="ic">📒</span><h1>Mis pegatinas</h1></div>
    ${done.some(Boolean)?`<div class="trophies">${ALBUMS.map((a,i)=>done[i]?`<span>🏆 ${a.name}</span>`:'').join('')}</div>`:''}
    <div class="tabs">${ALBUMS.map((a,i)=>i<=curAl?`<button data-act="albumtab" data-i="${i}" aria-pressed="${i===ai}">${a.name}</button>`:'').join('')}</div>
    <div class="card album">${ALBUMS[ai].items.map((em,i)=>{const got=ai*24+i<n;return `<div class="${got?'got':'miss'}"${got?` style="animation-delay:${i*.03}s"`:''}><span>${em}</span></div>`}).join('')}</div>
@@ -1012,7 +1015,7 @@ function act(a,el){const id=el.dataset.id;
    case 'draftav':draft.av=+el.dataset.i;app.querySelectorAll('.animals button').forEach(b=>b.setAttribute('aria-pressed',b===el));sTap();speak(`El ${AV_NAMES[draft.av]}`);break;
    case 'saveplayer':savePlayer();break;
    case 'players':renderPlayers();speak('¿Quién juega?');break;
-   case 'home':renderHome();break;
+   case 'home':G=null;layer.innerHTML='';renderHome();break;
    case 'area':sTap();if(id==='let'&&screen==='abc'){renderArea(id);break}renderArea(id);speak(AREAS.find(x=>x.id===id).name);break;
    case 'game':sTap();if(GAMES[id].explore){renderAbc();speak('El abecedario. Toca una letra.')}else startRound([id],false,GAMES[id].area);break;
    case 'mixarea':startRound(AREAS.find(x=>x.id===id).games.filter(g=>!GAMES[g].explore),true,id);speak('¡Todo mezclado!');break;
