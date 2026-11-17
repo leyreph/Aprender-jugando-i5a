@@ -23,7 +23,7 @@ body{background-color:var(--paper);background-image:radial-gradient(var(--dots) 
   color:var(--ink);font-family:var(--body);line-height:1.35;text-transform:uppercase;-webkit-user-select:none;user-select:none}
 [hidden]{display:none!important}
 button,input,textarea{font:inherit;color:inherit}
-button{cursor:pointer;border:0;background:none;padding:0}
+button{cursor:pointer;border:0;background:none;padding:0;text-transform:inherit}
 button:focus-visible,input:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
 input,textarea{-webkit-user-select:text;user-select:text}
 .wrap{max-width:900px;margin:0 auto;padding:calc(.8rem + env(safe-area-inset-top,0px)) max(.9rem,env(safe-area-inset-right,0px)) calc(2rem + env(safe-area-inset-bottom,0px)) max(.9rem,env(safe-area-inset-left,0px))}
@@ -254,6 +254,27 @@ textarea{width:100%;min-height:6rem;padding:.6rem;border:.15rem solid var(--ink)
 .lock input{width:7rem;text-align:center;font:700 2rem var(--display);padding:.4rem;border:.18rem solid var(--ink);border-radius:.8rem;margin:.8rem 0}
 .muted{color:var(--muted)}
 .foot{text-align:center;color:var(--muted);font-size:.75rem;margin-top:2rem}
+
+/* home: compact area tiles + sticker album at the bottom */
+.tile.mix{width:100%;margin:0 0 .8rem;padding:1rem .8rem .6rem}
+.tiles.areas{grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}
+.tiles.areas .tile{min-height:6.4rem;padding:1rem .2rem .5rem;border-radius:1.1rem;gap:.15rem}
+.tiles.areas .tile::before{height:.6rem}
+.tiles.areas .tile .ic{font-size:2.3rem;margin-top:.2rem}
+.tiles.areas .tile .nm{font-size:.82rem}
+.tile.turnsbtn{width:100%;margin-top:.8rem;padding:.9rem .8rem .5rem}
+.tile.turnsbtn .ic{font-size:2rem}.tile.turnsbtn .nm{font-size:1.1rem}
+.hello{margin:.1rem 0 .7rem}.hello .av{width:3.6rem;height:3.6rem;font-size:2.4rem}.hello h1{font-size:1.6rem}
+.stkcard{display:block;width:100%;margin-top:1rem;padding:.7rem .8rem .5rem;background:#fff7e0;text-align:left}
+.stkhead{display:flex;align-items:center;gap:.5rem;font:700 1.05rem var(--display)}
+.stkhead .ic{font-size:1.7rem}.stkhead b{flex:1;min-width:0}
+.stkhead .cnt{background:var(--sun);border:.13rem solid var(--ink);border-radius:1rem;padding:.05rem .55rem;font-size:.9rem}
+.stktro{font:700 .8rem var(--display);margin:.3rem 0 0}
+.minialbum{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:.3rem;margin:.6rem 0 .2rem}
+.minialbum div{aspect-ratio:1;display:grid;place-items:center;font-size:1.45rem;border-radius:.6rem;border:.12rem dashed #d9c48f;background:#fffaf0}
+.minialbum div.got{border:.13rem solid var(--ink);background:#fff}
+.minialbum div.miss span{filter:brightness(0);opacity:.12}
+.stkcard .prog{margin:.4rem 0 0;padding:0;border:0;box-shadow:none;background:none}
 </style>
 </head>
 <body>
@@ -739,16 +760,22 @@ function topBar(){const p=me();
     :`<button class="chip" data-act="players" aria-label="Cambiar de jugador">${avHtml(p)}<b>${esc(p.name)}</b></button>`;
   return `<div class="top">${chip}<div class="grow"></div>${turns?'':`<div class="starcount" id="starc">⭐ ${p.stars}</div>`}
     <button class="round" data-act="parents" aria-label="Rincón para mayores">⚙️</button></div>`}
-function renderHome(){if(!me()){renderPlayers();return}show('home');const p=me();const k=p.stars%STARS_PER_STICKER;
+function miniAlbum(p){const n=stickersOf(p);const ai=Math.min(Math.floor(n/24),ALBUMS.length-1);const al=ALBUMS[ai];const k=p.stars%STARS_PER_STICKER;
+  const done=ALBUMS.filter((a,i)=>n>=(i+1)*24);
+  return `<button class="card stkcard" data-act="album">
+   <div class="stkhead"><span class="ic">📒</span><b>Mis pegatinas · ${al.name}</b><span class="cnt">${Math.min(n-ai*24,24)}/24</span></div>
+   ${done.length?`<div class="stktro">${done.map(a=>`🏆 ${a.name}`).join(' · ')}</div>`:''}
+   <div class="minialbum">${al.items.map((em,i)=>{const got=ai*24+i<n;return `<div class="${got?'got':'miss'}"><span>${em}</span></div>`}).join('')}</div>
+   <div class="prog"><span>⭐ ${k}/${STARS_PER_STICKER}</span><div class="bar"><i style="width:${k/STARS_PER_STICKER*100}%"></i></div><span class="next">${stickerAt(n)}</span></div>
+  </button>`}
+function renderHome(){if(!me()){renderPlayers();return}show('home');const p=me();
   app.innerHTML=topBar()+
   (turns?`<div class="card turnsbar"><span style="font-size:1.8rem">👫</span><div class="grow">Jugáis por turnos: ${turns.map(id=>esc(P(id).name)).join(' y ')}</div><button class="small-btn" data-act="noturns">✕ Salir</button></div>`
     :`<div class="hello">${avHtml(p)}<h1>¡Hola, ${esc(p.name)}!</h1></div>`)+
-  `<div class="tiles">${AREAS.map(a=>`<button class="tile" style="--c:${a.c}" data-act="area" data-id="${a.id}"><span class="ic">${a.ic}</span><span class="nm">${a.name}</span></button>`).join('')}
-   <button class="tile wide" style="--c:#7d5cf0" data-act="mixall"><span class="ic">🔀</span><span class="nm">Un poco de todo</span></button>
-   ${turns?'':`<button class="tile wide" style="--c:#ffc83d" data-act="album"><span class="ic">📒</span><span class="nm">Mis pegatinas</span></button>`}
-   ${!turns&&players.length>1?`<button class="tile wide" style="--c:#2fb35a" data-act="turns"><span class="ic">👫</span><span class="nm">Jugar por turnos</span></button>`:''}
-  </div>`+
-  (turns?'':`<div class="card prog" data-act="album"><span style="font:700 1.1rem var(--display)">⭐ ${k}/${STARS_PER_STICKER}</span><div class="bar"><i style="width:${k/STARS_PER_STICKER*100}%"></i></div><span class="next">${stickerAt(stickersOf(p))}</span></div>`)}
+  `<button class="tile wide mix" style="--c:#7d5cf0" data-act="mixall"><span class="ic">🔀</span><span class="nm">Un poco de todo</span></button>
+  <div class="tiles areas">${AREAS.map(a=>`<button class="tile" style="--c:${a.c}" data-act="area" data-id="${a.id}"><span class="ic">${a.ic}</span><span class="nm">${a.name}</span></button>`).join('')}</div>
+  ${!turns&&players.length>1?`<button class="tile wide turnsbtn" style="--c:#2fb35a" data-act="turns"><span class="ic">👫</span><span class="nm">Jugar por turnos</span></button>`:''}`+
+  (turns?'':miniAlbum(p))}
 
 function renderArea(aid){show('area');const a=AREAS.find(x=>x.id===aid);G=null;
   app.innerHTML=topBar()+`<div class="secttl"><button class="round" data-act="home" aria-label="Inicio">←</button><span class="ic">${a.ic}</span><h1>${a.name}</h1></div>
