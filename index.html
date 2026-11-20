@@ -460,6 +460,15 @@ ${mu('cuadriceps',`<ellipse cx="123" cy="322" rx="14" ry="26" fill="${M}" stroke
 ${mu('gemelos',`<ellipse cx="120" cy="388" rx="11" ry="22" fill="${M}" stroke="${INK}" stroke-width="3"/><ellipse cx="180" cy="388" rx="11" ry="22" fill="${M}" stroke="${INK}" stroke-width="3"/>`)}
 </svg>`}
 
+
+function handSvg(){const f=(k,x,y,w,h,extra='')=>`<g data-v="${k}"${extra}><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${w/2}" fill="${SKIN}" stroke="${INK}" stroke-width="5"/><rect x="${x+w*.22}" y="${y+7}" width="${w*.56}" height="${w*.62}" rx="${w*.2}" fill="#fff2f0" stroke="#e7b7a6" stroke-width="2.5"/></g>`;
+ return `<svg viewBox="0 0 300 350">
+${f('pulgar',74,150,38,112,' transform="rotate(-38 93 262)"')}${f('indice',90,66,38,130)}${f('corazon',132,40,38,150)}${f('anular',174,58,38,130)}${f('menique',214,100,33,95)}
+<g class="deco"><rect x="84" y="160" width="166" height="140" rx="48" fill="${SKIN}" stroke="${INK}" stroke-width="5"/><rect x="88" y="168" width="158" height="40" fill="${SKIN}"/>
+<rect x="118" y="292" width="100" height="52" fill="${SKIN}" stroke="${INK}" stroke-width="5"/><rect x="122" y="286" width="92" height="14" fill="${SKIN}"/>
+<path d="M120 236 Q150 252 196 232" fill="none" stroke="#e7b7a6" stroke-width="3" stroke-linecap="round"/></g>
+</svg>`}
+
 function tableSvg(top,bottom){return `<svg viewBox="0 0 300 300">
 <g class="deco"><line x1="10" y1="290" x2="290" y2="290" stroke="${INK}" stroke-width="4" stroke-dasharray="8 8"/>
 <rect x="44" y="160" width="18" height="128" rx="5" fill="#b8763d" stroke="${INK}" stroke-width="4"/><rect x="238" y="160" width="18" height="128" rx="5" fill="#b8763d" stroke="${INK}" stroke-width="4"/>
@@ -650,6 +659,16 @@ function genSistemas(){if(R(2)===0){const s=pick(SYS);const ans=pick(s.orgs);con
     opts:opts.map(k=>({v:k,html:`<span class="em">${FUNS[k][0]}</span>`,lab:FUNS[k][1]})),answer:f,after:[[`¡Sí! ${cap(ORG[o])} ${o.endsWith('s')?'sirven':'sirve'} ${FUNS[f][1]}.`]],
     label:`¿Para qué sirve ${ORG[o]}?`,wrongSay:v=>`Ese dibujo es ${FUNS[v][1]}. Piensa otra vez.`}}
 
+
+const FINGERS={pulgar:'el pulgar',indice:'el índice',corazon:'el dedo corazón',anular:'el anular',menique:'el meñique'};
+const FINGER_Q=[['¿Cuál es el dedo más pequeño? ¡Tócalo!','menique','¡Sí! El meñique es el más pequeño.'],['¿Cuál es el dedo más largo? ¡Tócalo!','corazon','¡Sí! El dedo corazón es el más largo.'],
+ ['¿Con qué dedo señalamos? ¡Tócalo!','indice','¡Sí! Señalamos con el índice.'],['¿Con qué dedo decimos «muy bien»? ¡Tócalo!','pulgar','¡Sí! Con el pulgar hacia arriba.'],
+ ['¿En qué dedo se pone el anillo? ¡Tócalo!','anular','¡Sí! El anillo va en el anular.']];
+function genDedos(){const st=`<div class="svgwrap" style="max-width:17rem">${handSvg()}</div>`;
+  if(R(3)===0){const f=pick(FINGER_Q);return {say:[[f[0]]],cap:f[0],stage:st,answer:f[1],names:FINGERS,after:[[f[2]]],label:f[0],wrongSay:v=>`Ese es ${FINGERS[v]}.`}}
+  const t=pick(Object.keys(FINGERS));
+  return {say:[[`Toca ${FINGERS[t]}`]],cap:`Toca ${FINGERS[t]}`,stage:st,answer:t,names:FINGERS,label:`Dedo: ${FINGERS[t]}`,wrongSay:v=>`Ese es ${FINGERS[v]}.`}}
+
 const SENSES={ojos:['👀','los ojos'],orejas:['👂','las orejas'],nariz:['👃','la nariz'],lengua:['👅','la lengua'],manos:['✋','las manos']};
 const SENSE_Q=[['¿Con qué ves el arcoíris?','ojos','🌈'],['¿Con qué oyes la música?','orejas','🎵'],['¿Con qué hueles una flor?','nariz','🌸'],['¿Con qué saboreas un helado?','lengua','🍦'],
   ['¿Con qué tocas un osito suave?','manos','🧸'],['¿Con qué ves los colores?','ojos','🎨'],['¿Con qué oyes un tambor?','orejas','🥁'],['¿Con qué hueles un pastel?','nariz','🎂'],['¿Con qué notas si la sopa está salada?','lengua','🍲']];
@@ -703,7 +722,7 @@ const AREAS=[
  {id:'num',name:'Números',ic:'🔢',c:'#ffc83d',games:['trazanum','contar','numero','masmenos','despues','globosnum']},
  {id:'let',name:'Letras',ic:'🔤',c:'#5cc8f0',games:['abc','trazalet','trazapal','letra','empieza','queempieza','vocales','globoslet']},
  {id:'col',name:'Colores y formas',ic:'🎨',c:'#f2679e',games:['color','dequecolor','formas','series','grande','arriba']},
- {id:'body',name:'Mi cuerpo',ic:'🦴',c:'#2fb35a',games:['cara','cuerpo','articulaciones','huesos','musculos','pordentro','sistemas','sentidos']},
+ {id:'body',name:'Mi cuerpo',ic:'🦴',c:'#2fb35a',games:['cara','cuerpo','dedos','articulaciones','huesos','musculos','pordentro','sistemas','sentidos']},
  {id:'en',name:'English',ic:'🇬🇧',c:'#9b84f5',games:['encolours','enfamily','ennumbers','enanimals','enbody']},
  {id:'ani',name:'Animales y emociones',ic:'🐾',c:'#ff8a2b',games:['sonidos','emociones']}
 ];
@@ -732,6 +751,7 @@ const GAMES={
  cuerpo:{name:'Mi cuerpo',ic:'🧍',gen:genCuerpo,say:'Las partes del cuerpo'},
  articulaciones:{name:'Articulaciones',ic:'🦵',gen:genArticulaciones,say:'Las articulaciones'},
  huesos:{name:'Huesos',ic:'💀',gen:genHuesos,say:'Los huesos'},
+ dedos:{name:'Los dedos',ic:'🖐️',gen:genDedos,say:'Los dedos de la mano'},
  musculos:{name:'Músculos',ic:'💪',gen:genMusculos,say:'Los músculos'},
  pordentro:{name:'Por dentro',ic:'🫀',gen:genPorDentro,say:'¿Qué tenemos por dentro?'},
  sistemas:{name:'Los sistemas',ic:'🫁',gen:genSistemas,say:'Respirar, la sangre y la comida'},
