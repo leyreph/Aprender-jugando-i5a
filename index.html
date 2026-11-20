@@ -117,7 +117,7 @@ h1,h2,h3{font-family:var(--display);margin:0;text-transform:uppercase}
 .turn{display:flex;align-items:center;justify-content:center;gap:.6rem;margin:0 0 .6rem;padding:.4rem;font:700 1.3rem var(--display);text-transform:uppercase;border-radius:1rem;background:var(--c);border:.18rem solid var(--ink);animation:pop .4s}
 .turn .av{width:2.6rem;height:2.6rem;font-size:1.7rem;background:#fff}
 .caption{text-align:center;font:700 1.25rem/1.2 var(--display);text-transform:uppercase;margin:.2rem 0 .7rem;min-height:1.5rem;color:var(--ink)}
-.caption small{display:block;font:500 .85rem var(--body);text-transform:none;color:var(--muted)}
+.caption small{display:block;font:600 .9rem var(--display);color:var(--muted)}
 .stage{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.5rem;margin:0 auto .8rem;min-height:2rem;position:relative}
 .stage.box{background:#fff;border:.18rem solid var(--ink);border-radius:1.4rem;padding:.8rem;box-shadow:0 .3rem 0 var(--ink)}
 .opts{display:grid;gap:.9rem;grid-template-columns:repeat(var(--n,3),minmax(0,1fr))}
@@ -277,6 +277,8 @@ textarea{width:100%;min-height:6rem;padding:.6rem;border:.15rem solid var(--ink)
 .stkcard .prog{margin:.4rem 0 0;padding:0;border:0;box-shadow:none;background:none}
 .homebtn{background:var(--sun)}
 .secttl .homebtn{margin-left:auto}
+.organ{display:block;width:5.2rem;height:5.2rem}.organ svg{width:100%;height:100%}
+.organbig .organ{width:8rem;height:8rem;animation:pop .5s}
 </style>
 </head>
 <body>
@@ -415,6 +417,49 @@ function skeletonSvg(){let ribs='';[138,156,174,192,210].forEach(y=>{ribs+=`M150
 <g data-v="tibia-perone">${hitLine('M124 414 L120 455 M176 414 L180 455',28)}${boneLine('M119 414 L115 455 M129 414 L126 455 M171 414 L174 455 M181 414 L184 455',6)}</g>
 <g class="deco">${boneLine('M112 460 l-20 4 M188 460 l20 4',7)}</g>
 </svg>`}
+
+/* ---- muscles & insides ---- */
+const ORGAN_SVG={
+ cerebro:`<path d="M20 60 C8 52 10 30 26 26 C28 12 48 8 56 16 C68 8 88 16 86 32 C98 40 94 62 80 64 C76 76 56 78 50 70 C42 78 24 74 20 60Z" fill="#f7a8c0" stroke="${INK}" stroke-width="4"/><path d="M34 34 C42 40 36 48 46 52 M60 28 C56 38 66 42 62 52 M30 58 C40 56 44 62 52 60 M70 50 C74 56 80 54 82 58" fill="none" stroke="#c96b8a" stroke-width="3" stroke-linecap="round"/>`,
+ pulmones:`<path d="M50 4 L50 34 M50 34 L43 43 M50 34 L57 43" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M45 22 L45 42 C36 30 14 40 12 70 C10 90 24 94 34 88 C44 82 45 70 45 56Z" fill="#8fc9ff" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/><path d="M55 22 L55 42 C64 30 86 40 88 70 C90 90 76 94 66 88 C56 82 55 70 55 56Z" fill="#8fc9ff" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`,
+ corazon:`<path d="M50 88 C12 62 2 38 18 21 C32 7 48 16 50 30 C52 16 68 7 82 21 C98 38 88 62 50 88Z" fill="#e53935" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><path d="M30 28 Q38 22 42 32" fill="none" stroke="#ff9b9b" stroke-width="5" stroke-linecap="round"/>`,
+ estomago:`<path d="M38 8 C38 30 28 40 28 56 C28 80 50 94 70 88 C90 82 94 62 80 52 C70 44 58 54 56 40 C54 28 56 16 56 8Z" fill="#ffb86b" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>`,
+ intestinos:`<rect x="12" y="14" width="76" height="72" rx="26" fill="#f6b2a8" stroke="${INK}" stroke-width="5"/><path d="M24 34 C34 24 44 44 54 34 C64 24 74 44 78 36 M24 54 C34 44 44 64 54 54 C64 44 74 64 78 56 M26 72 C36 64 46 80 56 72 C64 66 72 78 76 72" fill="none" stroke="#c9776d" stroke-width="4" stroke-linecap="round"/>`
+};
+const organIcon=k=>`<span class="organ"><svg viewBox="0 0 100 100">${ORGAN_SVG[k]}</svg></span>`;
+const organAt=(k,x,y,s)=>`<g data-v="${k}"><rect x="${x}" y="${y}" width="${100*s}" height="${100*s}" fill="transparent"/><g transform="translate(${x} ${y}) scale(${s})">${ORGAN_SVG[k]}</g></g>`;
+const PALE='#fde3cb';
+function insideSvg(){return `<svg viewBox="0 0 300 470">
+<g class="deco">${twoTone('M128 318 L124 380 L122 440 M172 318 L176 380 L178 440',22,PALE)}${twoTone('M102 152 L72 212 L52 268 M198 152 L228 212 L248 268',20,PALE)}
+<circle cx="46" cy="286" r="16" fill="${PALE}" stroke="${INK}" stroke-width="5"/><circle cx="254" cy="286" r="16" fill="${PALE}" stroke="${INK}" stroke-width="5"/>
+<ellipse cx="110" cy="452" rx="26" ry="13" fill="${PALE}" stroke="${INK}" stroke-width="5"/><ellipse cx="190" cy="452" rx="26" ry="13" fill="${PALE}" stroke="${INK}" stroke-width="5"/>
+<rect x="136" y="114" width="28" height="26" fill="${PALE}" stroke="${INK}" stroke-width="5"/><rect x="94" y="132" width="112" height="192" rx="34" fill="${PALE}" stroke="${INK}" stroke-width="5"/>
+<circle cx="150" cy="70" r="52" fill="${PALE}" stroke="${INK}" stroke-width="5"/></g>
+<g data-v="venas"><path d="M98 160 L70 216 L50 270 M202 160 L230 216 L250 270 M130 330 L126 390 L124 436 M170 330 L174 390 L176 436" fill="none" stroke="transparent" stroke-width="24" stroke-linecap="round"/>
+<path d="M95 160 L67 216 L47 270 M205 160 L233 216 L253 270 M126 330 L122 390 L120 436 M174 330 L178 390 L180 436" fill="none" stroke="#d32f2f" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M102 162 L75 218 L56 272 M198 162 L225 218 L244 272 M133 330 L129 390 L127 436 M167 330 L171 390 L173 436" fill="none" stroke="#3f6fd8" stroke-width="3.5" stroke-linecap="round"/></g>
+${organAt('cerebro',118,18,.64)}
+<g data-v="nariz"><circle cx="150" cy="90" r="11" fill="transparent"/><path d="M150 82 L143 96 L157 96" fill="none" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/></g>
+<g data-v="boca"><rect x="132" y="100" width="36" height="16" fill="transparent"/><path d="M136 104 Q150 116 164 104" fill="none" stroke="#e85a6b" stroke-width="5" stroke-linecap="round"/></g>
+${organAt('pulmones',104,134,.92)}${organAt('corazon',136,178,.36)}${organAt('estomago',146,214,.56)}${organAt('intestinos',112,256,.72)}
+</svg>`}
+function musclesSvg(){const M='#e8736f';const mu=(k,inner)=>`<g data-v="${k}">${inner}</g>`;
+ const ab=[180,201,222].map(y=>`<rect x="128" y="${y}" width="20" height="18" rx="6" fill="${M}" stroke="${INK}" stroke-width="3"/><rect x="152" y="${y}" width="20" height="18" rx="6" fill="${M}" stroke="${INK}" stroke-width="3"/>`).join('');
+ return `<svg viewBox="0 0 300 470">
+<g class="deco">${twoTone('M125 285 L121 352 L119 420 M175 285 L179 352 L181 420',24,SKIN)}${twoTone('M105 146 L72 208 L52 262 M195 146 L228 208 L248 262',22,SKIN)}
+<circle cx="45" cy="282" r="17" fill="${SKIN}" stroke="${INK}" stroke-width="5"/><circle cx="255" cy="282" r="17" fill="${SKIN}" stroke="${INK}" stroke-width="5"/>
+<ellipse cx="108" cy="440" rx="27" ry="14" fill="#e8483a" stroke="${INK}" stroke-width="5"/><ellipse cx="192" cy="440" rx="27" ry="14" fill="#e8483a" stroke="${INK}" stroke-width="5"/>
+<rect x="136" y="104" width="28" height="28" rx="6" fill="${SKIN}" stroke="${INK}" stroke-width="5"/><rect x="100" y="126" width="100" height="140" rx="26" fill="${SKIN}" stroke="${INK}" stroke-width="5"/>
+<rect x="104" y="252" width="92" height="40" rx="12" fill="#2f6fe4" stroke="${INK}" stroke-width="5"/>
+<circle cx="150" cy="66" r="46" fill="${SKIN}" stroke="${INK}" stroke-width="5"/><path d="M106 58 C108 18 192 18 194 58 C180 40 120 40 106 58Z" fill="#7a4a24" stroke="${INK}" stroke-width="4"/>
+<circle cx="135" cy="68" r="5" fill="${INK}"/><circle cx="165" cy="68" r="5" fill="${INK}"/><path d="M136 86 Q150 98 164 86" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/></g>
+${mu('biceps',`<ellipse cx="88" cy="177" rx="11" ry="25" transform="rotate(28 88 177)" fill="${M}" stroke="${INK}" stroke-width="3"/><ellipse cx="212" cy="177" rx="11" ry="25" transform="rotate(-28 212 177)" fill="${M}" stroke="${INK}" stroke-width="3"/>`)}
+${mu('pectorales',`<rect x="110" y="138" width="38" height="32" rx="13" fill="${M}" stroke="${INK}" stroke-width="3"/><rect x="152" y="138" width="38" height="32" rx="13" fill="${M}" stroke="${INK}" stroke-width="3"/>`)}
+${mu('abdominales',`<rect x="124" y="176" width="52" height="68" fill="transparent"/>${ab}`)}
+${mu('cuadriceps',`<ellipse cx="123" cy="322" rx="14" ry="26" fill="${M}" stroke="${INK}" stroke-width="3"/><ellipse cx="177" cy="322" rx="14" ry="26" fill="${M}" stroke="${INK}" stroke-width="3"/>`)}
+${mu('gemelos',`<ellipse cx="120" cy="388" rx="11" ry="22" fill="${M}" stroke="${INK}" stroke-width="3"/><ellipse cx="180" cy="388" rx="11" ry="22" fill="${M}" stroke="${INK}" stroke-width="3"/>`)}
+</svg>`}
+
 function tableSvg(top,bottom){return `<svg viewBox="0 0 300 300">
 <g class="deco"><line x1="10" y1="290" x2="290" y2="290" stroke="${INK}" stroke-width="4" stroke-dasharray="8 8"/>
 <rect x="44" y="160" width="18" height="128" rx="5" fill="#b8763d" stroke="${INK}" stroke-width="4"/><rect x="238" y="160" width="18" height="128" rx="5" fill="#b8763d" stroke="${INK}" stroke-width="4"/>
@@ -572,6 +617,39 @@ function genHuesos(){const sk=`<div class="svgwrap" style="max-width:16rem">${sk
   if(R(3)===0){const s=pick(BONE_SPECIAL);return {say:[[s[0]]],cap:s[0],stage:sk,answer:s[1],names:BONES,after:[[s[2]]],label:s[0],wrongSay:v=>`Eso es ${BONES[v]}.`}}
   const t=pick(Object.keys(BONES));
   return {say:[[`Toca ${BONES[t]}`]],cap:`Toca ${BONES[t]}`,stage:sk,answer:t,names:BONES,label:`Hueso: ${BONES[t]}`,wrongSay:v=>`Eso es ${BONES[v]}.`}}
+
+const MUS={biceps:'el bíceps',pectorales:'los pectorales',abdominales:'los abdominales',cuadriceps:'el cuádriceps',gemelos:'los gemelos'};
+const MUS_AFTER={biceps:'¡Sí! El bíceps sirve para doblar el brazo.',pectorales:'¡Sí! Los pectorales están en el pecho.',abdominales:'¡Sí! Los abdominales están en la tripa.',
+  cuadriceps:'¡Sí! El cuádriceps está en el muslo y nos ayuda a saltar.',gemelos:'¡Sí! Los gemelos están en la pierna y nos ayudan a correr.'};
+const MUS_FACTS=[['¿Qué músculo trabaja siempre, incluso cuando dormimos?','corazon',[['corazon','🫀','el corazón'],['biceps','💪','el bíceps'],['pierna','🦵','la pierna']],'¡Sí! El corazón es un músculo que nunca descansa.'],
+ ['¿Qué nos ayuda a tener los músculos fuertes?','deporte',[['deporte','🏃','hacer deporte'],['tele','📺','ver la tele'],['chuches','🍭','comer chuches']],'¡Sí! Correr y jugar pone los músculos fuertes.'],
+ ['Los músculos mueven… ¿qué?','huesos',[['huesos','🦴','los huesos'],['globos','🎈','los globos'],['arboles','🌳','los árboles']],'¡Sí! Los músculos mueven los huesos.'],
+ ['¿Con qué músculos sonreímos?','cara',[['cara','😀','los de la cara'],['pie','🦶','los del pie'],['mano','✋','los de la mano']],'¡Sí! En la cara tenemos muchos músculos para sonreír.']];
+function genMusculos(){if(R(3)===0){const f=pick(MUS_FACTS);const names=Object.fromEntries(f[2].map(o=>[o[0],o[2]]));
+    return {say:[[f[0]]],cap:f[0],opts:shuffle(f[2]).map(o=>({v:o[0],html:`<span class="em">${o[1]}</span>`,lab:o[2]})),answer:f[1],names,after:[[f[3]]],label:f[0],wrongSay:v=>`Eso es ${names[v]}.`}}
+  const t=pick(Object.keys(MUS));
+  return {say:[[`Toca ${MUS[t]}`]],cap:`Toca ${MUS[t]}`,stage:`<div class="svgwrap" style="max-width:17rem">${musclesSvg()}</div>`,answer:t,names:MUS,after:[[MUS_AFTER[t]]],
+    label:`Músculo: ${MUS[t]}`,wrongSay:v=>`Eso es ${MUS[v]}.`}}
+const ORG={cerebro:'el cerebro',pulmones:'los pulmones',corazon:'el corazón',estomago:'el estómago',intestinos:'los intestinos',nariz:'la nariz',boca:'la boca',venas:'las venas'};
+const ORG_SPECIAL=[['¿Con qué pensamos? ¡Tócalo!','cerebro','¡Sí! Pensamos con el cerebro.'],['Cuando respiramos, ¿adónde llega el aire? ¡Tócalo!','pulmones','¡Sí! El aire llega a los pulmones.'],
+ ['¿Qué mueve la sangre por todo el cuerpo? ¡Tócalo!','corazon','¡Sí! El corazón bombea la sangre.'],['Cuando tragamos la comida, ¿adónde va? ¡Tócalo!','estomago','¡Sí! La comida va al estómago.'],
+ ['¿Por dónde entra la comida?','boca','¡Sí! Por la boca.'],['¿Por dónde entra el aire?','nariz','¡Sí! Por la nariz.'],['¿Por dónde corre la sangre?','venas','¡Sí! La sangre corre por las venas.']];
+function genPorDentro(){const st=`<div class="svgwrap" style="max-width:17rem">${insideSvg()}</div>`;
+  if(R(2)===0){const s=pick(ORG_SPECIAL);return {say:[[s[0]]],cap:s[0],stage:st,answer:s[1],names:ORG,after:[[s[2]]],label:s[0],wrongSay:v=>`Eso es ${ORG[v]}.`}}
+  const t=pick(['cerebro','pulmones','corazon','estomago','intestinos','venas']);
+  return {say:[[`Toca ${ORG[t]}`]],cap:`Toca ${ORG[t]}`,stage:st,answer:t,names:ORG,label:`Por dentro: ${ORG[t]}`,wrongSay:v=>`Eso es ${ORG[v]}.`}}
+const SYS=[{k:'respiratorio',say:'El sistema respiratorio sirve para respirar.',orgs:['pulmones']},{k:'circulatorio',say:'El sistema circulatorio mueve la sangre por todo el cuerpo.',orgs:['corazon']},
+  {k:'digestivo',say:'El sistema digestivo aprovecha la comida que comemos.',orgs:['estomago','intestinos']}];
+const ORG_FUN={pulmones:'respirar',corazon:'sangre',estomago:'comer',intestinos:'comer',cerebro:'pensar'};
+const FUNS={respirar:['🌬️','para respirar'],sangre:['🩸','para mover la sangre'],comer:['🍽️','para la comida'],pensar:['💭','para pensar']};
+function genSistemas(){if(R(2)===0){const s=pick(SYS);const ans=pick(s.orgs);const others=sample(Object.keys(ORGAN_SVG).filter(k=>!s.orgs.includes(k)),2);
+    return {say:[[`${s.say} ¿Qué parte es del sistema ${s.k}?`]],cap:`Sistema ${s.k}`,sub:s.say,opts:shuffle([ans,...others]).map(k=>({v:k,html:organIcon(k),lab:ORG[k]})),answer:ans,names:ORG,
+      after:[[`¡Sí! ${cap(ORG[ans])} ${ans.endsWith('s')?'son':'es'} del sistema ${s.k}.`]],afterHtml:`${cap(ORG[ans])}`,label:`Sistema ${s.k}`,wrongSay:v=>`Eso ${v.endsWith('s')?'son':'es'} ${ORG[v]}.`}}
+  const o=pick(Object.keys(ORG_FUN));const f=ORG_FUN[o];const opts=shuffle([f,...sample(Object.keys(FUNS),2,[f])]);
+  return {say:[[`¿Para qué ${o.endsWith('s')?'sirven':'sirve'} ${ORG[o]}?`]],cap:'¿Para qué sirve?',sub:cap(ORG[o]),stage:`<div class="organbig">${organIcon(o)}</div>`,
+    opts:opts.map(k=>({v:k,html:`<span class="em">${FUNS[k][0]}</span>`,lab:FUNS[k][1]})),answer:f,after:[[`¡Sí! ${cap(ORG[o])} ${o.endsWith('s')?'sirven':'sirve'} ${FUNS[f][1]}.`]],
+    label:`¿Para qué sirve ${ORG[o]}?`,wrongSay:v=>`Ese dibujo es ${FUNS[v][1]}. Piensa otra vez.`}}
+
 const SENSES={ojos:['👀','los ojos'],orejas:['👂','las orejas'],nariz:['👃','la nariz'],lengua:['👅','la lengua'],manos:['✋','las manos']};
 const SENSE_Q=[['¿Con qué ves el arcoíris?','ojos','🌈'],['¿Con qué oyes la música?','orejas','🎵'],['¿Con qué hueles una flor?','nariz','🌸'],['¿Con qué saboreas un helado?','lengua','🍦'],
   ['¿Con qué tocas un osito suave?','manos','🧸'],['¿Con qué ves los colores?','ojos','🎨'],['¿Con qué oyes un tambor?','orejas','🥁'],['¿Con qué hueles un pastel?','nariz','🎂'],['¿Con qué notas si la sopa está salada?','lengua','🍲']];
@@ -625,7 +703,7 @@ const AREAS=[
  {id:'num',name:'Números',ic:'🔢',c:'#ffc83d',games:['trazanum','contar','numero','masmenos','despues','globosnum']},
  {id:'let',name:'Letras',ic:'🔤',c:'#5cc8f0',games:['abc','trazalet','trazapal','letra','empieza','queempieza','vocales','globoslet']},
  {id:'col',name:'Colores y formas',ic:'🎨',c:'#f2679e',games:['color','dequecolor','formas','series','grande','arriba']},
- {id:'body',name:'Mi cuerpo',ic:'🦴',c:'#2fb35a',games:['cara','cuerpo','articulaciones','huesos','sentidos']},
+ {id:'body',name:'Mi cuerpo',ic:'🦴',c:'#2fb35a',games:['cara','cuerpo','articulaciones','huesos','musculos','pordentro','sistemas','sentidos']},
  {id:'en',name:'English',ic:'🇬🇧',c:'#9b84f5',games:['encolours','enfamily','ennumbers','enanimals','enbody']},
  {id:'ani',name:'Animales y emociones',ic:'🐾',c:'#ff8a2b',games:['sonidos','emociones']}
 ];
@@ -654,6 +732,9 @@ const GAMES={
  cuerpo:{name:'Mi cuerpo',ic:'🧍',gen:genCuerpo,say:'Las partes del cuerpo'},
  articulaciones:{name:'Articulaciones',ic:'🦵',gen:genArticulaciones,say:'Las articulaciones'},
  huesos:{name:'Huesos',ic:'💀',gen:genHuesos,say:'Los huesos'},
+ musculos:{name:'Músculos',ic:'💪',gen:genMusculos,say:'Los músculos'},
+ pordentro:{name:'Por dentro',ic:'🫀',gen:genPorDentro,say:'¿Qué tenemos por dentro?'},
+ sistemas:{name:'Los sistemas',ic:'🫁',gen:genSistemas,say:'Respirar, la sangre y la comida'},
  sentidos:{name:'Los 5 sentidos',ic:'👃',gen:genSentidos,say:'Los cinco sentidos'},
  encolours:{name:'Colours',ic:'🎨',gen:genEnColours,say:'Colours!',lang:'en'},
  enfamily:{name:'Family',ic:'👨‍👩‍👧‍👦',gen:genEnFamily,say:'My family!',lang:'en'},
