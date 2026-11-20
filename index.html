@@ -279,6 +279,10 @@ textarea{width:100%;min-height:6rem;padding:.6rem;border:.15rem solid var(--ink)
 .secttl .homebtn{margin-left:auto}
 .organ{display:block;width:5.2rem;height:5.2rem}.organ svg{width:100%;height:100%}
 .organbig .organ{width:8rem;height:8rem;animation:pop .5s}
+.sumrow{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%}
+.sumrow .items{background:#fff;border:.18rem solid var(--ink);border-radius:1.2rem;padding:.5rem;min-width:6.5rem;min-height:6.5rem;justify-content:center;box-shadow:0 .25rem 0 var(--ink)}
+.plus{font:700 3rem var(--display)}
+.opt.wideopt{min-height:5rem;align-items:flex-start;padding:.6rem 1rem}
 </style>
 </head>
 <body>
@@ -469,6 +473,22 @@ ${f('pulgar',74,150,38,112,' transform="rotate(-38 93 262)"')}${f('indice',90,66
 <path d="M120 236 Q150 252 196 232" fill="none" stroke="#e7b7a6" stroke-width="3" stroke-linecap="round"/></g>
 </svg>`}
 
+
+/* ---- concepts: inside/outside, in front/behind, full/empty, long/short, many/few ---- */
+function boxSvg(a,b){return `<svg viewBox="0 0 300 280">
+<g class="deco"><line x1="10" y1="270" x2="290" y2="270" stroke="${INK}" stroke-width="4" stroke-dasharray="8 8"/><polygon points="60,165 75,140 215,140 200,165" fill="#a86a35" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/></g>
+<g data-v="dentro"><rect x="58" y="80" width="160" height="188" fill="transparent"/><text x="134" y="178" font-size="80" text-anchor="middle">${a}</text></g>
+<g class="deco"><rect x="60" y="165" width="140" height="100" rx="4" fill="#d99a5c" stroke="${INK}" stroke-width="5"/><polygon points="200,165 215,140 215,240 200,265" fill="#c2834a" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/><line x1="130" y1="165" x2="130" y2="200" stroke="#b5773f" stroke-width="8"/></g>
+<g data-v="fuera"><rect x="222" y="180" width="76" height="90" fill="transparent"/><text x="259" y="262" font-size="62" text-anchor="middle">${b}</text></g>
+</svg>`}
+function treeSvg(behind,front){return `<svg viewBox="0 0 300 300">
+<g data-v="detras"><rect x="200" y="70" width="98" height="110" fill="transparent"/><text x="252" y="160" font-size="64" text-anchor="middle">${behind}</text></g>
+<g class="deco"><text x="150" y="255" font-size="190" text-anchor="middle">🌳</text><line x1="10" y1="290" x2="290" y2="290" stroke="${INK}" stroke-width="4" stroke-dasharray="8 8"/></g>
+<g data-v="delante"><rect x="50" y="190" width="110" height="105" fill="transparent"/><text x="105" y="285" font-size="84" text-anchor="middle">${front}</text></g>
+</svg>`}
+const glassSvg=(full,col)=>`<svg viewBox="0 0 100 140" style="width:4.6rem;height:6.4rem">${full?`<path d="M18 26 L82 26 L75 128 L25 128Z" fill="${col}"/>`:''}<path d="M14 8 L86 8 L76 132 L24 132Z" fill="${full?'none':'#f2f8ff'}" stroke="${INK}" stroke-width="6" stroke-linejoin="round"/><path d="M26 22 L30 110" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/></svg>`;
+const pencilSvg=(len,col)=>`<svg viewBox="0 0 250 44" style="width:100%;height:auto;max-width:17rem"><rect x="6" y="8" width="${len}" height="28" rx="5" fill="${col}" stroke="${INK}" stroke-width="5"/><polygon points="${6+len},8 ${36+len},22 ${6+len},36" fill="#f4d19b" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><polygon points="${28+len},18 ${36+len},22 ${28+len},26" fill="${INK}"/></svg>`;
+
 function tableSvg(top,bottom){return `<svg viewBox="0 0 300 300">
 <g class="deco"><line x1="10" y1="290" x2="290" y2="290" stroke="${INK}" stroke-width="4" stroke-dasharray="8 8"/>
 <rect x="44" y="160" width="18" height="128" rx="5" fill="#b8763d" stroke="${INK}" stroke-width="4"/><rect x="238" y="160" width="18" height="128" rx="5" fill="#b8763d" stroke="${INK}" stroke-width="4"/>
@@ -577,6 +597,32 @@ function genTrazaLet(){const L=pick(LETTERS);const w=WORDS[L][0];
 function genTrazaPal(){const [w,e,syl]=pick(WRITE_WORDS);
   return {say:[[`Vamos a escribir ${low(w)}. Primero, la ${LN[baseL(w[0])]}.`]],cap:'Escribe la palabra',trace:w,word:{w,e,syl},answer:'ok',label:`Escribir ${w}`,
     after:[[`${syl}. ¡${cap(low(w))}!`]],afterHtml:`${e} ${[...w].map((c,i)=>`<span style="animation-delay:${i*.07}s">${c}</span>`).join('')}`}}
+
+function genJuntar(){const a=1+R(4),b=1+R(3);const em=pick(COUNT_EM);const n=a+b;
+  return {say:[[`Aquí hay ${NUM_ES[a]}, y aquí hay ${NUM_ES[b]}. Si los juntamos, ¿cuántos hay?`]],cap:'Si los juntamos, ¿cuántos hay?',
+    stage:`<div class="sumrow">${itemsHtml(a,em)}<span class="plus">+</span>${itemsHtml(b,em)}</div><div class="cntbadge" hidden></div>`,
+    opts:numOpts(n,1,10).map(numOpt),answer:String(n),after:[[`¡Sí! ${cap(NUM_ES[a])} y ${NUM_ES[b]}, ${NUM_ES[n]}.`]],afterHtml:`${a} + ${b} = ${n}`,label:`Juntar ${a} + ${b}`,
+    wrongSay:()=>'Cuenta todos juntos. Puedes tocarlos.'}}
+const SPOT_EM=['🐱','🐶','🐰','🐻','🐸','🐥','🦊','🐼','🐷','🐭'];
+function genDondeEsta(){const [a,b]=sample(SPOT_EM,2);
+  if(R(2)===0){const inQ=R(2)===0;const t=inQ?'¿Quién está dentro de la caja?':'¿Quién está fuera de la caja?';
+    return {say:[[t]],cap:t,stage:`<div class="svgwrap" style="max-width:18rem">${boxSvg(a,b)}</div>`,box:true,answer:inQ?'dentro':'fuera',names:{dentro:'dentro',fuera:'fuera'},label:t,
+      after:[[inQ?'¡Sí! Está dentro de la caja.':'¡Sí! Está fuera de la caja.']],wrongSay:v=>v==='dentro'?'Ese está dentro de la caja.':'Ese está fuera de la caja.'}}
+  const fr=R(2)===0;const t=fr?'¿Quién está delante del árbol?':'¿Quién está detrás del árbol?';
+  return {say:[[t]],cap:t,stage:`<div class="svgwrap" style="max-width:18rem">${treeSvg(a,b)}</div>`,box:true,answer:fr?'delante':'detras',names:{delante:'delante',detras:'detrás'},label:t,
+    after:[[fr?'¡Sí! Está delante del árbol.':'¡Sí! Está detrás del árbol, escondido.']],wrongSay:v=>v==='delante'?'Ese está delante del árbol.':'Ese está detrás del árbol.'}}
+const DRINKS=[['agua','#7cc4ff'],['zumo','#ffa53b'],['batido','#ff8cc6']];
+function genContrarios(){const k=R(3);
+  if(k===0){const full=R(2)===0;const d=pick(DRINKS);const t=full?'Toca el vaso lleno':'Toca el vaso vacío';
+    return {say:[[t]],cap:t,cols:2,opts:shuffle([{v:'lleno',html:glassSvg(true,d[1]),lab:'vaso lleno'},{v:'vacio',html:glassSvg(false),lab:'vaso vacío'}]),answer:full?'lleno':'vacio',
+      after:[[full?`¡Sí! Está lleno de ${d[0]}.`:'¡Sí! Está vacío, no tiene nada.']],label:t,wrongSay:v=>v==='lleno'?'Ese está lleno.':'Ese está vacío.'}}
+  if(k===1){const long=R(2)===0;const [c1,c2]=sample(SHAPE_COLS,2);const t=long?'Toca el lápiz largo':'Toca el lápiz corto';
+    return {say:[[t]],cap:t,cols:1,opts:shuffle([{v:'largo',html:pencilSvg(185,c1),lab:'lápiz largo',cls:'wideopt'},{v:'corto',html:pencilSvg(65,c2),lab:'lápiz corto',cls:'wideopt'}]),answer:long?'largo':'corto',
+      after:[[long?'¡Sí! Ese es el largo.':'¡Sí! Ese es el corto.']],label:t,wrongSay:v=>v==='largo'?'Ese es el largo.':'Ese es el corto.'}}
+  const many=R(2)===0;const em=pick(COUNT_EM);const a=7+R(4),b=1+R(2);const t=many?'¿Dónde hay muchos?':'¿Dónde hay pocos?';
+  return {say:[[t]],cap:t,cols:2,opts:shuffle([{v:'muchos',html:Array(a).fill(em).join(''),lab:'muchos',cls:'grp'},{v:'pocos',html:Array(b).fill(em).join(''),lab:'pocos',cls:'grp'}]),answer:many?'muchos':'pocos',
+    after:[[many?'¡Sí! Ahí hay muchos.':'¡Sí! Ahí hay pocos.']],label:t,wrongSay:v=>v==='muchos'?'Ahí hay muchos.':'Ahí hay pocos.'}}
+
 function genColor(){const [t,...o]=shuffle(COLORS).slice(0,3);const opts=shuffle([t,...o]);
   return {say:[[`Toca el color ${t[0]}`]],cap:`Toca el color ${t[0]}`,opts:opts.map(colorOpt),answer:t[0],label:`Toca el ${t[0]}`,wrongSay:v=>`Ese es el ${v}.`}}
 function genDeQueColor(){const it=pick(OBJ_COLORS);const t=COLORS.find(c=>c[0]===it[1]);const opts=shuffle([t,...sample(COLORS,2,[t])]);
@@ -719,15 +765,16 @@ function genEmociones(){const em=Object.fromEntries(EMO);
 
 /* ================= catalogue ================= */
 const AREAS=[
- {id:'num',name:'Números',ic:'🔢',c:'#ffc83d',games:['trazanum','contar','numero','masmenos','despues','globosnum']},
+ {id:'num',name:'Números',ic:'🔢',c:'#ffc83d',games:['trazanum','contar','juntar','numero','masmenos','despues','globosnum']},
  {id:'let',name:'Letras',ic:'🔤',c:'#5cc8f0',games:['abc','trazalet','trazapal','letra','empieza','queempieza','vocales','globoslet']},
- {id:'col',name:'Colores y formas',ic:'🎨',c:'#f2679e',games:['color','dequecolor','formas','series','grande','arriba']},
+ {id:'col',name:'Colores y formas',ic:'🎨',c:'#f2679e',games:['color','dequecolor','formas','series','grande','arriba','dondeesta','contrarios']},
  {id:'body',name:'Mi cuerpo',ic:'🦴',c:'#2fb35a',games:['cara','cuerpo','dedos','articulaciones','huesos','musculos','pordentro','sistemas','sentidos']},
  {id:'en',name:'English',ic:'🇬🇧',c:'#9b84f5',games:['encolours','enfamily','ennumbers','enanimals','enbody']},
  {id:'ani',name:'Animales y emociones',ic:'🐾',c:'#ff8a2b',games:['sonidos','emociones']}
 ];
 const GAMES={
  contar:{name:'Contar',ic:'🍎',gen:genContar,say:'Vamos a contar'},
+ juntar:{name:'Juntar',ic:'➕',gen:genJuntar,say:'Vamos a juntar'},
  numero:{name:'¿Qué número es?',ic:'7️⃣',gen:genNumero,say:'¿Qué número es?'},
  masmenos:{name:'Más y menos',ic:'⚖️',gen:genMasMenos,say:'Más y menos'},
  despues:{name:'¿Qué va después?',ic:'➡️',gen:genDespues,say:'¿Qué número va después?'},
@@ -747,6 +794,8 @@ const GAMES={
  series:{name:'Series',ic:'🍎🍌',gen:genSeries,say:'Las series'},
  grande:{name:'Grande y pequeño',ic:'🐘',gen:genGrande,say:'Grande y pequeño'},
  arriba:{name:'Arriba y abajo',ic:'⬆️',gen:genArriba,say:'Arriba y abajo'},
+ dondeesta:{name:'Dentro, fuera, delante, detrás',ic:'📦',gen:genDondeEsta,say:'¿Dónde está?'},
+ contrarios:{name:'Lleno, largo, mucho…',ic:'🥛',gen:genContrarios,say:'Los contrarios'},
  cara:{name:'Mi cara',ic:'🙂',gen:genCara,say:'Mi cara'},
  cuerpo:{name:'Mi cuerpo',ic:'🧍',gen:genCuerpo,say:'Las partes del cuerpo'},
  articulaciones:{name:'Articulaciones',ic:'🦵',gen:genArticulaciones,say:'Las articulaciones'},
