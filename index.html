@@ -883,8 +883,8 @@ function renderHome(){if(!me()){renderPlayers();return}show('home');const p=me()
 
 function renderArea(aid){show('area');const a=AREAS.find(x=>x.id===aid);G=null;
   app.innerHTML=topBar()+`<div class="secttl"><span class="ic">${a.ic}</span><h1>${a.name}</h1></div>
-  <div class="tiles">${a.games.map(gid=>{const g=GAMES[gid];return `<button class="tile" style="--c:${a.c}" data-act="game" data-id="${gid}"><span class="ic">${g.ic}</span><span class="nm">${g.name}</span></button>`}).join('')}
-  ${a.games.filter(g=>!GAMES[g].explore).length>1?`<button class="tile wide" style="--c:${a.c}" data-act="mixarea" data-id="${aid}"><span class="ic">🔀</span><span class="nm">Todo mezclado</span></button>`:''}</div>`}
+  ${a.games.filter(g=>!GAMES[g].explore).length>1?`<button class="tile wide mix" style="--c:${a.c}" data-act="mixarea" data-id="${aid}"><span class="ic">🔀</span><span class="nm">Todo mezclado</span></button>`:''}
+  <div class="tiles areas">${a.games.map(gid=>{const g=GAMES[gid];return `<button class="tile" style="--c:${a.c}" data-act="game" data-id="${gid}"><span class="ic">${g.ic}</span><span class="nm">${g.name}</span></button>`}).join('')}</div>`}
 
 /* ================= alphabet explorer ================= */
 const ABC_COLS=['#ffd86b','#a6e4ff','#ffc4e1','#b9ef7a','#e2c8ff','#ffc29a'];
