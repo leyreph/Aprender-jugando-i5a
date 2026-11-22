@@ -1165,6 +1165,9 @@ function renderParents(pid){const p=P(pid);let h=`<div class="wrap"><div class="
      <div class="row2">Leer en voz alta<button class="sw" role="switch" aria-checked="${cfg.voice}" data-act="cfg" data-k="voice"></button></div>
      <div class="row2">Voz más despacio<button class="sw" role="switch" aria-checked="${cfg.slow}" data-act="cfg" data-k="slow"></button></div>
      <div class="row2" style="border:0">Sonidos<button class="sw" role="switch" aria-checked="${cfg.sounds}" data-act="cfg" data-k="sounds"></button></div></div>`;
+  h+=`<h2>Copia de seguridad</h2><div class="card panel"><p class="muted" style="margin:0 0 .6rem;font-size:.85rem">Los jugadores y su progreso se guardan en este navegador. Si se borran los datos del navegador o cambias de aparato, se pierden. Copia este código y guárdalo (por ejemplo, mándatelo por WhatsApp o email) para poder recuperarlo.</p>
+     <div style="display:flex;gap:.6rem;flex-wrap:wrap"><button class="small-btn" data-act="bkcopy">📋 Copiar código</button><button class="small-btn" data-act="bkrestore">♻️ Restaurar desde código</button></div>
+     <textarea id="bk" style="margin-top:.6rem;min-height:4.5rem;font-size:.75rem" placeholder="Aquí sale el código, o pega aquí uno guardado para restaurarlo"></textarea><span id="bkmsg" class="muted" style="font-size:.85rem"></span></div>`;
   h+=`<h2>Sugerencias o errores</h2><div class="card panel"><textarea id="sug" placeholder="Cuéntanos qué mejorarías o qué no funciona…"></textarea>
      <div style="display:flex;align-items:center;gap:.8rem;margin-top:.6rem"><button class="btn blue" data-act="sendsug" style="font-size:.95rem">Enviar</button><span id="sugmsg" class="muted" style="font-size:.85rem"></span></div></div>
      <p class="foot">Los datos (jugadores, estrellas y progreso) se guardan solo en este aparato.</p></div>`;
@@ -1224,6 +1227,13 @@ function act(a,el){const id=el.dataset.id;
    case 'addfromparents':layer.innerHTML='';draft=null;renderAdd();break;
    case 'cfg':{const k=el.dataset.k;cfg[k]=!cfg[k];store.set('cfg',cfg);el.setAttribute('aria-checked',cfg[k]);if(k==='voice'&&!cfg.voice)hush();if(k==='slow'&&cfg.voice)speak('Así hablo ahora.');break}
    case 'sendsug':sendSug();break;
+   case 'bkcopy':{const code='AJ5:'+btoa(unescape(encodeURIComponent(JSON.stringify({v:1,players,cfg}))));const t=$('bk');t.value=code;t.select();
+     let ok=false;try{navigator.clipboard.writeText(code).then(()=>{$('bkmsg').textContent='¡Copiado! Pégalo donde quieras guardarlo.'}).catch(()=>{$('bkmsg').textContent='Selecciona el texto y cópialo.'});ok=true}catch(e){}
+     if(!ok)$('bkmsg').textContent='Selecciona el texto y cópialo.';break}
+   case 'bkrestore':{const raw=($('bk').value||'').trim();let data=null;try{data=JSON.parse(decodeURIComponent(escape(atob(raw.replace(/^AJ5:/,'')))))}catch(e){}
+     if(!data||!Array.isArray(data.players)){$('bkmsg').textContent='Ese código no es válido. Pega el código completo.';break}
+     if(!sure(el))break;players=data.players;if(data.cfg)cfg=Object.assign(cfg,data.cfg);store.set('cfg',cfg);curId=players[0]?players[0].id:null;turns=null;save();
+     layer.innerHTML='';renderPlayers();speak('¡Datos recuperados!');break}
   }}
 document.addEventListener('click',e=>{const t=e.target;
   if(screen==='game'&&G&&!t.closest('#layer')){const c=t.closest('[data-count]');if(c){countTap(c);return}
@@ -1234,6 +1244,8 @@ document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 
 /* ================= start ================= */
 if(curId&&!me())curId=null;
+// ask the browser to keep our data (makes automatic clean-up less likely)
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
 renderPlayers();
 </script>
 </body>
