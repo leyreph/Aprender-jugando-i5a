@@ -978,7 +978,10 @@ function tapWord(j,el){const L=abcL,w=WORDS[L][j];el.classList.add('on');sTap();
 /* ================= game engine ================= */
 function startRound(gids,mix,back){const pids=turns?turns.slice():[curId];
   const one=GAMES[gids[0]];const n=mix?8:(one.n||5);
-  G={gids,mix,n:turns&&!mix?Math.max(n,pids.length*3):n,i:0,back,res:[],by:{},stk:[],pids,introDone:false};
+  // in turn mode every child gets the same number of questions: 5 each for 2 players, 4 each for 3, 3 each for 4+ (fewer for writing games)
+  let per=pids.length<=2?5:pids.length===3?4:3;
+  if(!mix&&gids[0]==='trazapal')per=Math.min(per,2);else if(!mix&&(gids[0]==='trazalet'||gids[0]==='trazanum'))per=Math.min(per,3);
+  G={gids,mix,n:pids.length>1?per*pids.length:n,i:0,back,res:[],by:{},stk:[],pids,introDone:false};
   pids.forEach(id=>G.by[id]=0);renderQ()}
 function weakPick(gids,pid){const p=P(pid);const w=gids.map(g=>{const s=p.stats[g];return s&&s.n>=3?1+2*(1-s.ok/s.n):1.3});
   let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<gids.length;i++){r-=w[i];if(r<=0)return gids[i]}return gids[0]}
