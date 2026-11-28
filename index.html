@@ -296,6 +296,9 @@ textarea{width:100%;min-height:6rem;padding:.6rem;border:.15rem solid var(--ink)
 .pl.pick[aria-pressed=true]{background:#d7f5df}
 .pl.pick[aria-pressed=true] .tick{background:var(--leaf);color:#fff}
 .players+.turnsbtn{margin-top:1.2rem}
+.editbtn{font-size:1rem;padding:.45rem .9rem}
+.pl.editing{position:relative;outline:.2rem dashed var(--orange);outline-offset:.2rem}
+.pl .pencil{position:absolute;top:.4rem;right:.5rem;font-size:1.5rem}
 </style>
 </head>
 <body>
@@ -900,11 +903,14 @@ const PRAISE_EN=['Well done!','Great job!','Super!','Brilliant!'];
 /* ================= players screen ================= */
 const homeBtn=()=>`<button class="round homebtn" data-act="home" aria-label="Inicio">🏠</button>`;
 function show(name){screen=name;hush();if(name!=='game'){TR=null}layer.innerHTML='';window.scrollTo(0,0)}
-function renderPlayers(){show('players');
-  app.innerHTML=`<div class="deco-row">${['🎨','🔢','🦁','🔤','🎈','🦴','⭐'].map((e,i)=>`<span style="animation-delay:${i*.35}s">${e}</span>`).join('')}</div><h1 class="who-title">¿Quién juega?</h1><p class="who-sub">${players.length?'Toca tu animal':'Toca el + para crear un jugador'}</p>
-  <div class="players">${players.map(p=>`<button class="card pl" data-act="pick" data-id="${p.id}">${avHtml(p)}<b>${esc(p.name)}</b></button>`).join('')}
+let editMode=false;
+function renderPlayers(){show('players');const ed=editMode&&players.length>0;
+  app.innerHTML=`<div class="top">${players.length?`<button class="btn ${ed?'green':''} editbtn" data-act="editmode">${ed?'✓ Listo':'✏️ Editar'}</button>`:''}<div class="grow"></div><button class="round" data-act="parents" aria-label="Rincón para mayores">⚙️</button></div>
+  ${ed?'':`<div class="deco-row">${['🎨','🔢','🦁','🔤','🎈','🦴','⭐'].map((e,i)=>`<span style="animation-delay:${i*.35}s">${e}</span>`).join('')}</div>`}
+  <h1 class="who-title">${ed?'¿A quién editamos?':'¿Quién juega?'}</h1><p class="who-sub">${ed?'Toca un jugador para cambiar su animal o su nombre':players.length?'Toca tu animal':'Toca el + para crear un jugador'}</p>
+  <div class="players">${players.map(p=>`<button class="card pl${ed?' editing':''}" data-act="${ed?'editpl':'pick'}" data-id="${p.id}">${avHtml(p)}<b>${esc(p.name)}</b>${ed?'<span class="pencil">✏️</span>':''}</button>`).join('')}
   <button class="card pl add" data-act="addpl"><span class="av">+</span><b>Nuevo</b></button></div>
-  ${players.length>1?`<button class="tile wide turnsbtn" style="--c:#2fb35a" data-act="turnpick"><span class="ic">👫</span><span class="nm">Jugar por turnos</span></button>`:''}
+  ${!ed&&players.length>1?`<button class="tile wide turnsbtn" style="--c:#2fb35a" data-act="turnpick"><span class="ic">👫</span><span class="nm">Jugar por turnos</span></button>`:''}
   <p class="foot">¡A aprender jugando! · Infantil 5 años</p>`}
 let draft=null;
 let tsel=[];
@@ -913,8 +919,8 @@ function renderTurnPick(){show('turnpick');
   <p class="who-sub">¿Quién va a jugar? Tocad los que jugáis</p>
   <div class="players">${players.map(p=>`<button class="card pl pick" data-act="tsel" data-id="${p.id}" aria-pressed="${tsel.includes(p.id)}">${avHtml(p)}<b>${esc(p.name)}</b><span class="tick">✓</span></button>`).join('')}</div>
   <div style="display:flex;justify-content:center;margin-top:1.3rem"><button class="btn green" data-act="tgo" style="font-size:1.4rem;padding:.8rem 2rem;${tsel.length<2?'opacity:.4':''}">▶ ¡A jugar!</button></div>`}
-function renderAdd(){show('add');draft=draft||{av:players.length%AVATARS.length,name:''};
-  app.innerHTML=`<div class="top"><button class="round" data-act="players" aria-label="Volver">←</button><h1 class="grow" style="font-size:1.6rem">Nuevo jugador</h1></div>
+function renderAdd(editId){show('add');if(editId){const x=P(editId);draft={edit:editId,av:x.av,name:x.name}}draft=draft||{av:players.length%AVATARS.length,name:''};
+  app.innerHTML=`<div class="top"><button class="round" data-act="players" aria-label="Volver">←</button><h1 class="grow" style="font-size:1.6rem">${draft.edit?'Editar jugador':'Nuevo jugador'}</h1></div>
   <div class="card" style="padding:1rem">
    <div class="lbl">1. Elige tu animal</div>
    <div class="animals">${AVATARS.map((a,i)=>`<button data-act="draftav" data-i="${i}" style="--c:${a[1]}" aria-pressed="${draft.av===i}" aria-label="${AV_NAMES[i]}">${a[0]}</button>`).join('')}</div>
@@ -924,6 +930,7 @@ function renderAdd(){show('add');draft=draft||{av:players.length%AVATARS.length,
   </div>`;
   $('nm').addEventListener('input',e=>draft.name=e.target.value)}
 function savePlayer(){const name=($('nm').value||'').trim();if(!name){$('nm').focus();speak('Escribe el nombre, por favor.');return}
+  if(draft.edit){const x=P(draft.edit);if(x){x.name=name.toUpperCase();x.av=draft.av;save()}draft=null;sTap();renderPlayers();speak(`¡Listo! ${x?x.name.toLowerCase()+', eres el '+AV_NAMES[x.av]:''}.`);return}
   const p={id:'p'+Date.now().toString(36)+R(999),name:name.toUpperCase(),av:draft.av,stars:0,stats:{},fails:[]};
   players.push(p);curId=p.id;turns=null;draft=null;save();confetti();speak(`¡Hola, ${p.name.toLowerCase()}! Eres el ${AV_NAMES[p.av]}.`);renderHome()}
 
@@ -1157,10 +1164,10 @@ function renderParents(pid){const p=P(pid);let h=`<div class="wrap"><div class="
     h+=(any?'':'<span class="muted">Todavía no ha jugado.</span>')+`</div>`;
     h+=`<h2>Últimos fallos</h2><div class="card panel">${p.fails.length?p.fails.slice(0,15).map(f=>`<div class="fail"><b>${esc(f.q)}</b><br>Contestó: ${esc(f.a)} · Correcta: <b>${esc(f.c)}</b><br><small>${GAMES[f.g]?GAMES[f.g].name:''} · ${new Date(f.t).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</small></div>`).join(''):'<span class="muted">Sin fallos guardados.</span>'}</div>
      <button class="small-btn red" data-act="resetpl" data-id="${p.id}">Borrar el progreso de ${esc(p.name)}</button>`}
-  h+=`<h2>Jugadores</h2><div class="card panel">${players.map(x=>`<div class="plrow"><button data-act="cycleav" data-id="${x.id}" aria-label="Cambiar animal">${avHtml(x)}</button>
-     <input value="${esc(x.name)}" maxlength="14" data-rename="${x.id}" aria-label="Nombre"><button class="small-btn red" data-act="delpl" data-id="${x.id}">Borrar</button></div>`).join('')}
+  h+=`<h2>Jugadores</h2><div class="card panel">${players.map(x=>`<div class="plrow">${avHtml(x)}<b style="flex:1;min-width:0;font:700 1rem var(--display)">${esc(x.name)}</b>
+     <button class="small-btn" data-act="editpl" data-id="${x.id}">✏️ Editar</button><button class="small-btn red" data-act="delpl" data-id="${x.id}">Borrar</button></div>`).join('')}
      <div style="margin-top:.6rem"><button class="small-btn" data-act="addfromparents">+ Añadir jugador</button></div>
-     <p class="muted" style="font-size:.8rem;margin:.5rem 0 0">Toca el animal para cambiarlo. Puedes crear tantos jugadores como quieras.</p></div>`;
+     <p class="muted" style="font-size:.8rem;margin:.5rem 0 0">Con «Editar» puedes cambiar el animal y el nombre. También desde «¿Quién juega?» → ✏️ Editar.</p></div>`;
   h+=`<h2>Ajustes</h2><div class="card panel">
      <div class="row2">Leer en voz alta<button class="sw" role="switch" aria-checked="${cfg.voice}" data-act="cfg" data-k="voice"></button></div>
      <div class="row2">Voz más despacio<button class="sw" role="switch" aria-checked="${cfg.slow}" data-act="cfg" data-k="slow"></button></div>
@@ -1186,7 +1193,7 @@ function sure(el){if(el.dataset.sure)return true;el.dataset.sure=1;el.dataset.tx
 function backFromGame(){const b=G&&G.back;G=null;if(!b||b==='home')renderHome();else renderArea(b)}
 function act(a,el){const id=el.dataset.id;
   switch(a){
-   case 'pick':curId=id;turns=null;save();sTap();renderHome();speak(`¡Hola, ${me().name.toLowerCase()}! ¿A qué jugamos?`);break;
+   case 'pick':editMode=false;curId=id;turns=null;save();sTap();renderHome();speak(`¡Hola, ${me().name.toLowerCase()}! ¿A qué jugamos?`);break;
    case 'addpl':draft=null;renderAdd();speak('Elige tu animal y escribe tu nombre.');break;
    case 'draftav':draft.av=+el.dataset.i;app.querySelectorAll('.animals button').forEach(b=>b.setAttribute('aria-pressed',b===el));sTap();speak(`El ${AV_NAMES[draft.av]}`);break;
    case 'saveplayer':savePlayer();break;
@@ -1218,12 +1225,13 @@ function act(a,el){const id=el.dataset.id;
    case 'closestk':{const rest=layer._next||[];layer.innerHTML='';showStickers(rest);break}
    case 'parents':openLock();break;
    case 'unlock':unlock();break;
-   case 'closesheet':layer.innerHTML='';if(!me()){renderPlayers()}else if(screen==='home')renderHome();else if(screen==='album')renderAlbum();break;
+   case 'closesheet':layer.innerHTML='';if(!me()||screen==='players'){renderPlayers()}else if(screen==='home')renderHome();else if(screen==='album')renderAlbum();break;
    case 'ptab':renderParents(id);break;
    case 'resetpl':{const x=P(id);if(x&&sure(el)){x.stars=0;x.stats={};x.fails=[];save();renderParents(id)}break}
    case 'delpl':{const x=P(id);if(x&&sure(el)){players=players.filter(y=>y.id!==id);if(curId===id)curId=players[0]?players[0].id:null;turns=null;save();
      if(players.length)renderParents(curId);else{layer.innerHTML='';renderPlayers()}}break}
-   case 'cycleav':{const x=P(id);x.av=(x.av+1)%AVATARS.length;save();renderParents(layer.querySelector('.tabs [aria-pressed=true]')?.dataset.id||id);break}
+   case 'editmode':editMode=!editMode;sTap();renderPlayers();if(editMode)speak('¿A quién editamos?');break;
+   case 'editpl':layer.innerHTML='';draft=null;renderAdd(id);speak('Elige el animal y el nombre.');break;
    case 'addfromparents':layer.innerHTML='';draft=null;renderAdd();break;
    case 'cfg':{const k=el.dataset.k;cfg[k]=!cfg[k];store.set('cfg',cfg);el.setAttribute('aria-checked',cfg[k]);if(k==='voice'&&!cfg.voice)hush();if(k==='slow'&&cfg.voice)speak('Así hablo ahora.');break}
    case 'sendsug':sendSug();break;
